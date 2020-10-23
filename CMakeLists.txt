@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(catwalk LANGUAGES CXX)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 if (NOT Boost_ROOT)
     set(Boost_ROOT "Q:/msys2/lib/boost-1.74.0/stage/lib/cmake/Boost-1.74.0")
@@ -24,6 +24,8 @@ list(APPEND beast-src
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${beast-src})
+
+target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC BOOST_ASIO_NO_DEPRECATED)
 
 target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_17)
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")

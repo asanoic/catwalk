@@ -1,7 +1,7 @@
 #include "listener.h"
 
-#include "utils.h"
 #include "http-session.h"
+#include "utils.h"
 
 using tcp = boost::asio::ip::tcp;
 
@@ -33,8 +33,7 @@ listener::listener(net::io_context& ioc, tcp::endpoint endpoint, std::shared_ptr
     }
 
     // Start listening for connections
-    acceptor_.listen(
-        net::socket_base::max_listen_connections, ec);
+    acceptor_.listen(net::socket_base::max_listen_connections, ec);
     if (ec) {
         fail(ec, "listen");
         return;
@@ -46,11 +45,7 @@ void listener::run() {
     // on the I/O objects in this session. Although not strictly necessary
     // for single-threaded contexts, this example code is written to be
     // thread-safe by default.
-    net::dispatch(
-        acceptor_.get_executor(),
-        beast::bind_front_handler(
-            &listener::do_accept,
-            this->shared_from_this()));
+    net::dispatch(acceptor_.get_executor(), beast::bind_front_handler(&listener::do_accept, this->shared_from_this()));
 }
 
 void listener::do_accept() {

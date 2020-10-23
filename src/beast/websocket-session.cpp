@@ -16,11 +16,7 @@ void websocket_session::on_accept(beast::error_code ec) {
 
 void websocket_session::do_read() {
     // Read a message into our buffer
-    ws_.async_read(
-        buffer_,
-        beast::bind_front_handler(
-            &websocket_session::on_read,
-            shared_from_this()));
+    ws_.async_read(buffer_, beast::bind_front_handler(&websocket_session::on_read, shared_from_this()));
 }
 
 void websocket_session::on_read(beast::error_code ec, std::size_t bytes_transferred) {
@@ -35,11 +31,7 @@ void websocket_session::on_read(beast::error_code ec, std::size_t bytes_transfer
 
     // Echo the message
     ws_.text(ws_.got_text());
-    ws_.async_write(
-        buffer_.data(),
-        beast::bind_front_handler(
-            &websocket_session::on_write,
-            shared_from_this()));
+    ws_.async_write(buffer_.data(), beast::bind_front_handler(&websocket_session::on_write, shared_from_this()));
 }
 
 void websocket_session::on_write(beast::error_code ec, std::size_t bytes_transferred) {

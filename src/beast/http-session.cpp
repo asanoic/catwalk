@@ -16,11 +16,7 @@ void http_session::run() {
     // on the I/O objects in this session. Although not strictly necessary
     // for single-threaded contexts, this example code is written to be
     // thread-safe by default.
-    net::dispatch(
-        stream_.get_executor(),
-        beast::bind_front_handler(
-            &http_session::do_read,
-            this->shared_from_this()));
+    net::dispatch(stream_.get_executor(), beast::bind_front_handler(&http_session::do_read, this->shared_from_this()));
 }
 
 void http_session::do_read() {
@@ -35,13 +31,7 @@ void http_session::do_read() {
     stream_.expires_after(std::chrono::seconds(30));
 
     // Read a request using the parser-oriented interface
-    http::async_read(
-        stream_,
-        buffer_,
-        *parser_,
-        beast::bind_front_handler(
-            &http_session::on_read,
-            shared_from_this()));
+    http::async_read(stream_, buffer_, *parser_, beast::bind_front_handler(&http_session::on_read, shared_from_this()));
 }
 
 void http_session::on_read(beast::error_code ec, std::size_t bytes_transferred) {
@@ -58,9 +48,7 @@ void http_session::on_read(beast::error_code ec, std::size_t bytes_transferred) 
     if (websocket::is_upgrade(parser_->get())) {
         // Create a websocket session, transferring ownership
         // of both the socket and the HTTP request.
-        std::make_shared<websocket_session>(
-            stream_.release_socket())
-            ->do_accept(parser_->release());
+        std::make_shared<websocket_session>(stream_.release_socket())->do_accept(parser_->release());
         return;
     }
 

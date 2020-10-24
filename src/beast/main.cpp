@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <cstdlib>
 #include <functional>
+#include <iostream>
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
-#include <iostream>
 
 #include "listener.h"
 
@@ -14,7 +14,7 @@ using namespace std;
 using CwIoContext = boost::asio::io_context;
 using CwEndPoint = boost::asio::ip::tcp::endpoint;
 using CwSignalSet = boost::asio::signal_set;
-using CwTcp = boost::asio::ip::tcp;
+using CwAddress = boost::asio::ip::address;
 
 int main(int argc, char* argv[]) {
 
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 
     CwIoContext ioc(threads);
 
-    make_shared<listener>(ioc, CwEndPoint(CwTcp::v4(), port), doc_root)->run();
+    make_shared<listener>(ioc, CwEndPoint(CwAddress(), port), doc_root)->run();
 
     CwSignalSet signals(ioc, SIGINT, SIGTERM);
     signals.async_wait(bind(&CwIoContext::stop, &ioc));

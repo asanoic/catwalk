@@ -4,7 +4,7 @@ project(catwalk LANGUAGES CXX)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 if (NOT Boost_ROOT)
-    set(Boost_ROOT "Q:/msys2/lib/boost-1.74.0/stage/lib/cmake/Boost-1.74.0")
+    set(Boost_ROOT "/opt/boost/stage/lib/cmake/Boost-1.74.0")
 endif()
 
 set (pwd ${CMAKE_CURRENT_LIST_DIR})
@@ -28,8 +28,14 @@ add_executable(${CMAKE_PROJECT_NAME} ${beast-src})
 target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC BOOST_ASIO_NO_DEPRECATED)
 
 target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_17)
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wa,-mbig-obj -Og)
-endif()
 
-target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC Boost::system -lws2_32 -lmswsock)
+if(MINGW)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE -Wa,-mbig-obj -Og)
+    endif()
+    target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -lws2_32 -lmswsock)
+else()
+    target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -lpthread)
+endif()    
+
+target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC Boost::system)

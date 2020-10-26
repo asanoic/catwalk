@@ -12,6 +12,7 @@ set (pwd ${CMAKE_CURRENT_LIST_DIR})
 find_package(Boost 1.70 REQUIRED COMPONENTS system)
 
 list(APPEND beast-src
+    "${pwd}/src/beast/boost-headers.h"
     "${pwd}/src/beast/main.cpp"
     "${pwd}/src/beast/listener.h"
     "${pwd}/src/beast/listener.cpp"
@@ -25,7 +26,7 @@ list(APPEND beast-src
 
 add_executable(${CMAKE_PROJECT_NAME} ${beast-src})
 
-target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC BOOST_ASIO_NO_DEPRECATED)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PUBLIC BOOST_ASIO_NO_DEPRECATED BOOST_BEAST_USE_STD_STRING_VIEW)
 
 target_compile_features(${CMAKE_PROJECT_NAME} PUBLIC cxx_std_17)
 

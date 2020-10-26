@@ -3,23 +3,21 @@
 #include "utils.h"
 #include "websocket-session.h"
 
-namespace net = boost::asio;
-
-http_session::http_session(tcp::socket&& socket, std::shared_ptr<std::string const> const& doc_root) :
-    stream_(std::move(socket)),
+CwHttpSession::CwHttpSession(CwSocket&& socket, shared_ptr<const string> const& doc_root) :
+    stream_(move(socket)),
     doc_root_(doc_root),
     queue_(*this) {
 }
 
-void http_session::run() {
+void CwHttpSession::run() {
     // We need to be executing within a strand to perform async operations
     // on the I/O objects in this session. Although not strictly necessary
     // for single-threaded contexts, this example code is written to be
     // thread-safe by default.
-    net::dispatch(stream_.get_executor(), beast::bind_front_handler(&http_session::do_read, this->shared_from_this()));
+    CwAsio::dispatch(stream_.get_executor(), CwBeast::bind_front_handler(&CwHttpSession::do_read, this->shared_from_this()));
 }
 
-void http_session::do_read() {
+void CwHttpSession::do_read() {
     // Construct a new parser for each message
     parser_.emplace();
 
@@ -28,27 +26,27 @@ void http_session::do_read() {
     parser_->body_limit(10000);
 
     // Set the timeout.
-    stream_.expires_after(std::chrono::seconds(30));
+    stream_.expires_after(chrono::seconds(30));
 
     // Read a request using the parser-oriented interface
-    http::async_read(stream_, buffer_, *parser_, beast::bind_front_handler(&http_session::on_read, shared_from_this()));
+    CwHttp::async_read(stream_, buffer_, *parser_, CwBeast::bind_front_handler(&CwHttpSession::on_read, shared_from_this()));
 }
 
-void http_session::on_read(beast::error_code ec, std::size_t bytes_transferred) {
+void CwHttpSession::on_read(CwErrorCode ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
     // This means they closed the connection
-    if (ec == http::error::end_of_stream)
+    if (ec == CwHttp::error::end_of_stream)
         return do_close();
 
     if (ec)
         return fail(ec, "read");
 
     // See if it is a WebSocket Upgrade
-    if (websocket::is_upgrade(parser_->get())) {
+    if (CwWebSocket::is_upgrade(parser_->get())) {
         // Create a websocket session, transferring ownership
         // of both the socket and the HTTP request.
-        std::make_shared<websocket_session>(stream_.release_socket())->do_accept(parser_->release());
+        std::make_shared<CwWebSocketSession>(stream_.release_socket())->do_accept(parser_->release());
         return;
     }
 
@@ -60,7 +58,7 @@ void http_session::on_read(beast::error_code ec, std::size_t bytes_transferred) 
         do_read();
 }
 
-void http_session::on_write(bool close, beast::error_code ec, std::size_t bytes_transferred) {
+void CwHttpSession::on_write(bool close, CwErrorCode ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
     if (ec)
@@ -79,28 +77,27 @@ void http_session::on_write(bool close, beast::error_code ec, std::size_t bytes_
     }
 }
 
-void http_session::do_close() {
+void CwHttpSession::do_close() {
     // Send a TCP shutdown
-    beast::error_code ec;
-    stream_.socket().shutdown(tcp::socket::shutdown_send, ec);
+    CwErrorCode ec;
+    stream_.socket().shutdown(CwSocket::shutdown_send, ec);
 
     // At this point the connection is closed gracefully
 }
 
-http_session::queue::queue(http_session& self) :
+CwHttpSession::queue::queue(CwHttpSession& self) :
     self_(self) {
     static_assert(limit > 0, "queue limit must be positive");
-    items_.reserve(limit);
 }
 
-bool http_session::queue::is_full() const {
+bool CwHttpSession::queue::is_full() const {
     return items_.size() >= limit;
 }
 
-bool http_session::queue::on_write() {
+bool CwHttpSession::queue::on_write() {
     BOOST_ASSERT(!items_.empty());
     auto const was_full = is_full();
-    items_.erase(items_.begin());
+    items_.pop_front();
     if (!items_.empty())
         (*items_.front())();
     return was_full;

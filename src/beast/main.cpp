@@ -11,11 +11,6 @@
 
 using namespace std;
 
-using CwIoContext = boost::asio::io_context;
-using CwEndPoint = boost::asio::ip::tcp::endpoint;
-using CwSignalSet = boost::asio::signal_set;
-using CwAddress = boost::asio::ip::address;
-
 int main(int argc, char* argv[]) {
 
     if (argc != 3) {
@@ -31,7 +26,7 @@ int main(int argc, char* argv[]) {
 
     CwIoContext ioc(threads);
 
-    make_shared<listener>(ioc, CwEndPoint(CwAddress(), port), doc_root)->run();
+    make_shared<CwListener>(ioc, CwEndPoint(CwAddress(), port), doc_root)->run();
 
     CwSignalSet signals(ioc, SIGINT, SIGTERM);
     signals.async_wait(bind(&CwIoContext::stop, &ioc));

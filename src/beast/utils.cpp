@@ -1,50 +1,50 @@
 #include "utils.h"
 
 #include <iostream>
+#include <unordered_map>
 
-void fail(beast::error_code ec, char const* what) {
-    std::cerr << what << ": " << ec.message() << "\n";
+void fail(CwErrorCode ec, char const* what) {
+    cerr << what << ": " << ec.message() << "\n";
 }
 
 // Return a reasonable mime type based on the extension of a file.
-beast::string_view mime_type(beast::string_view path) {
-    using beast::iequals;
-    auto const ext = [&path] {
-        auto const pos = path.rfind(".");
-        if (pos == beast::string_view::npos)
-            return beast::string_view{};
-        return path.substr(pos);
-    }();
-    if (iequals(ext, ".htm")) return "text/html";
-    if (iequals(ext, ".html")) return "text/html";
-    if (iequals(ext, ".php")) return "text/html";
-    if (iequals(ext, ".css")) return "text/css";
-    if (iequals(ext, ".txt")) return "text/plain";
-    if (iequals(ext, ".js")) return "application/javascript";
-    if (iequals(ext, ".json")) return "application/json";
-    if (iequals(ext, ".xml")) return "application/xml";
-    if (iequals(ext, ".swf")) return "application/x-shockwave-flash";
-    if (iequals(ext, ".flv")) return "video/x-flv";
-    if (iequals(ext, ".png")) return "image/png";
-    if (iequals(ext, ".jpe")) return "image/jpeg";
-    if (iequals(ext, ".jpeg")) return "image/jpeg";
-    if (iequals(ext, ".jpg")) return "image/jpeg";
-    if (iequals(ext, ".gif")) return "image/gif";
-    if (iequals(ext, ".bmp")) return "image/bmp";
-    if (iequals(ext, ".ico")) return "image/vnd.microsoft.icon";
-    if (iequals(ext, ".tiff")) return "image/tiff";
-    if (iequals(ext, ".tif")) return "image/tiff";
-    if (iequals(ext, ".svg")) return "image/svg+xml";
-    if (iequals(ext, ".svgz")) return "image/svg+xml";
-    return "application/text";
+string_view mime_type(string_view path) {
+    static unordered_map<string_view, string_view> extTable = {
+        {".htm", "text/html"},
+        {".html", "text/html"},
+        {".php", "text/html"},
+        {".css", "text/css"},
+        {".txt", "text/plain"},
+        {".js", "application/javascript"},
+        {".json", "application/json"},
+        {".xml", "application/xml"},
+        {".swf", "application/x-shockwave-flash"},
+        {".flv", "video/x-flv"},
+        {".png", "image/png"},
+        {".jpe", "image/jpeg"},
+        {".jpeg", "image/jpeg"},
+        {".jpg", "image/jpeg"},
+        {".gif", "image/gif"},
+        {".bmp", "image/bmp"},
+        {".ico", "image/vnd.microsoft.icon"},
+        {".tiff", "image/tiff"},
+        {".tif", "image/tiff"},
+        {".svg", "image/svg+xml"},
+        {".svgz", "image/svg+xml"},
+    };
+    const size_t pos = path.rfind(".");
+    if (pos == string_view::npos) return string_view();
+    auto p = extTable.find(path.substr(pos));
+
+    return p == extTable.end() ? "application/text" : p->second;
 }
 
 // Append an HTTP rel-path to a local filesystem path.
 // The returned path is normalized for the platform.
-std::string path_cat(beast::string_view base, beast::string_view path) {
-    if (base.empty()) return std::string(path);
+string path_cat(string_view base, string_view path) {
+    if (base.empty()) return string(path);
 
-    std::string result(base);
+    string result(base);
     char constexpr path_separator = '/';
     if (result.back() == path_separator) result.resize(result.size() - 1);
     result.append(path.data(), path.size());

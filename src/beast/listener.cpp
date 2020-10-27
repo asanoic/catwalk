@@ -3,11 +3,11 @@
 #include "http-session.h"
 #include "utils.h"
 
-CwListener::CwListener(CwIoContext& ioc, CwEndPoint endpoint, shared_ptr<const string> const& doc_root) :
+CwListener::CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, shared_ptr<const string> const& doc_root) :
     ioc_(ioc),
-    acceptor_(CwAsio::make_strand(ioc)),
+    acceptor_(asio::make_strand(ioc)),
     doc_root_(doc_root) {
-    CwErrorCode ec;
+    beast::error_code ec;
 
     // Open the acceptor
     acceptor_.open(endpoint.protocol(), ec);
@@ -17,7 +17,7 @@ CwListener::CwListener(CwIoContext& ioc, CwEndPoint endpoint, shared_ptr<const s
     }
 
     // Allow address reuse
-    acceptor_.set_option(CwSockeBase::reuse_address(true), ec);
+    acceptor_.set_option(asio::socket_base::reuse_address(true), ec);
     if (ec) {
         fail(ec, "set_option");
         return;
@@ -31,7 +31,7 @@ CwListener::CwListener(CwIoContext& ioc, CwEndPoint endpoint, shared_ptr<const s
     }
 
     // Start listening for connections
-    acceptor_.listen(CwSockeBase::max_listen_connections, ec);
+    acceptor_.listen(asio::socket_base::max_listen_connections, ec);
     if (ec) {
         fail(ec, "listen");
         return;
@@ -43,15 +43,15 @@ void CwListener::run() {
     // on the I/O objects in this session. Although not strictly necessary
     // for single-threaded contexts, this example code is written to be
     // thread-safe by default.
-    CwAsio::dispatch(acceptor_.get_executor(), CwBeast::bind_front_handler(&CwListener::do_accept, this->shared_from_this()));
+    asio::dispatch(acceptor_.get_executor(), beast::bind_front_handler(&CwListener::do_accept, this->shared_from_this()));
 }
 
 void CwListener::do_accept() {
     // The new connection gets its own strand
-    acceptor_.async_accept(CwAsio::make_strand(ioc_), CwBeast::bind_front_handler(&CwListener::on_accept, shared_from_this()));
+    acceptor_.async_accept(asio::make_strand(ioc_), beast::bind_front_handler(&CwListener::on_accept, shared_from_this()));
 }
 
-void CwListener::on_accept(CwErrorCode ec, CwSocket socket) {
+void CwListener::on_accept(beast::error_code ec, ip::tcp::socket socket) {
     if (ec) {
         fail(ec, "accept");
     } else {

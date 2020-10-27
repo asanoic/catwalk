@@ -9,16 +9,16 @@
 using namespace std;
 
 class CwListener : public enable_shared_from_this<CwListener> {
-    CwIoContext& ioc_;
-    CwAcceptor acceptor_;
+    asio::io_context& ioc_;
+    ip::tcp::acceptor acceptor_;
     shared_ptr<const string> doc_root_;
 
 public:
-    CwListener(CwIoContext& ioc, CwEndPoint endpoint,shared_ptr<const string> const& doc_root);
+    CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint,shared_ptr<const string> const& doc_root);
     void run();
 
 private:
     void do_accept();
-    void on_accept(CwErrorCode ec, CwSocket socket);
+    void on_accept(beast::error_code ec, ip::tcp::socket socket);
 };
 #endif // LISTENER_H

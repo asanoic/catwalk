@@ -6,6 +6,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <cstdlib>
 
 #include "listener.h"
 
@@ -20,21 +21,25 @@ int main(int argc, char* argv[]) {
         return EXIT_FAILURE;
     }
 
+#ifdef __MINGW64__
+    _setmaxstdio(2048);
+#endif
+
     auto const port = atoi(argv[1]);
     auto const doc_root = make_shared<string>(argv[2]);
     auto const threads = max<int>(1, thread::hardware_concurrency());
 
-    CwIoContext ioc(threads);
+    asio::io_context ioc(threads);
 
-    make_shared<CwListener>(ioc, CwEndPoint(CwAddress(), port), doc_root)->run();
+    make_shared<CwListener>(ioc, ip::tcp::endpoint(ip::address(), port), doc_root)->run();
 
-    CwSignalSet signals(ioc, SIGINT, SIGTERM);
-    signals.async_wait(bind(&CwIoContext::stop, &ioc));
+    asio::signal_set signals(ioc, SIGINT, SIGTERM);
+    signals.async_wait(bind(&asio::io_context::stop, &ioc));
 
     vector<thread> v(threads - 1);
     v.reserve(threads - 1);
     for (auto i = threads - 1; i > 0; --i)
-        v.emplace_back(&CwIoContext::run, &ioc);
+        v.emplace_back(&asio::io_context::run, &ioc);
     ioc.run();
 
     // If we get here, it means we got a SIGINT or SIGTERM

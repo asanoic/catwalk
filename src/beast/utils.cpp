@@ -3,7 +3,7 @@
 #include <iostream>
 #include <unordered_map>
 
-void fail(CwErrorCode ec, char const* what) {
+void fail(beast::error_code ec, char const* what) {
     cerr << what << ": " << ec.message() << "\n";
 }
 

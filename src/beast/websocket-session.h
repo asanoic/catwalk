@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "boost-headers.h"
+#include "utils.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ public:
 
         // Set a decorator to change the Server of the handshake
         ws_.set_option(ws::stream_base::decorator([](ws::response_type& res) {
-            res.set(http::field::server, string(BOOST_BEAST_VERSION_STRING) + " advanced-server");
+            res.set(http::field::server, kServerName + " advanced-server");
         }));
 
         // Accept the websocket handshake

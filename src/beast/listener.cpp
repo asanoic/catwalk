@@ -43,12 +43,12 @@ void CwListener::run() {
     // on the I/O objects in this session. Although not strictly necessary
     // for single-threaded contexts, this example code is written to be
     // thread-safe by default.
-    asio::dispatch(acceptor_.get_executor(), beast::bind_front_handler(&CwListener::do_accept, this->shared_from_this()));
+    asio::dispatch(acceptor_.get_executor(), beast::bind_front_handler(&CwListener::do_accept, this));
 }
 
 void CwListener::do_accept() {
     // The new connection gets its own strand
-    acceptor_.async_accept(asio::make_strand(ioc_), beast::bind_front_handler(&CwListener::on_accept, shared_from_this()));
+    acceptor_.async_accept(asio::make_strand(ioc_), beast::bind_front_handler(&CwListener::on_accept, this));
 }
 
 void CwListener::on_accept(beast::error_code ec, ip::tcp::socket socket) {
@@ -58,7 +58,6 @@ void CwListener::on_accept(beast::error_code ec, ip::tcp::socket socket) {
         // Create the http session and run it
         std::make_shared<CwHttpSession>(move(socket), doc_root_)->run();
     }
-
     // Accept another connection
     do_accept();
 }

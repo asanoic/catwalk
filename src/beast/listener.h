@@ -8,7 +8,7 @@
 
 using namespace std;
 
-class CwListener : public enable_shared_from_this<CwListener> {
+class CwListener {
     asio::io_context& ioc_;
     ip::tcp::acceptor acceptor_;
     shared_ptr<const string> doc_root_;

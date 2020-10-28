@@ -6,7 +6,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include <cstdlib>
 
 #include "listener.h"
 
@@ -31,11 +30,13 @@ int main(int argc, char* argv[]) {
 
     asio::io_context ioc(threads);
 
-    make_shared<CwListener>(ioc, ip::tcp::endpoint(ip::address(), port), doc_root)->run();
+    unique_ptr<CwListener> listener = make_unique<CwListener>(ioc, ip::tcp::endpoint(ip::address(), port), doc_root);
+    listener->run();
 
     asio::signal_set signals(ioc, SIGINT, SIGTERM);
     signals.async_wait(bind(&asio::io_context::stop, &ioc));
 
+    cout << "port " << port << ", and " << threads << " thread" << (threads > 1 ? "s" : "") << endl;
     vector<thread> v(threads - 1);
     v.reserve(threads - 1);
     for (auto i = threads - 1; i > 0; --i)

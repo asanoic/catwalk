@@ -39,31 +39,7 @@ class CwHttpSession : public enable_shared_from_this<CwHttpSession> {
         bool on_write();
 
         // Called by the HTTP handler to send a response.
-        template<bool isRequest, class Body, class Fields>
-        void operator()(http::message<isRequest, Body, Fields>&& msg) {
-            // This holds a work item
-            struct work_impl : work {
-                CwHttpSession& self_;
-                http::message<isRequest, Body, Fields> msg_;
-
-                work_impl(
-                    CwHttpSession& self,
-                    http::message<isRequest, Body, Fields>&& msg) :
-                    self_(self),
-                    msg_(move(msg)) {
-                }
-
-                void operator()() {
-                    http::async_write(self_.stream_, msg_, beast::bind_front_handler(&CwHttpSession::on_write, self_.shared_from_this(), msg_.need_eof()));
-                }
-            };
-
-            // Allocate and store the work
-            items_.push_back(boost::make_unique<work_impl>(self_, std::move(msg)));
-
-            // If there was no previous work, start this one
-            if (items_.size() == 1) (*items_.front())();
-        }
+        void operator()(bx_response&& msg);
     };
 
     beast::tcp_stream stream_;
@@ -73,7 +49,7 @@ class CwHttpSession : public enable_shared_from_this<CwHttpSession> {
 
     // The parser is stored in an optional container so we can
     // construct it from scratch it at the beginning of each new message.
-    optional<http::request_parser<http::string_body>> parser_;
+    optional<bx_request_parser> parser_;
 
 public:
     // Take ownership of the socket
@@ -83,6 +59,7 @@ public:
     void run();
 
 private:
+    void handle_request(string_view doc_root, bx_request&& req, function<void(bx_response)>&& send);
     void do_read();
     void on_read(beast::error_code ec, size_t bytes_transferred);
     void on_write(bool close, beast::error_code ec, size_t bytes_transferred);

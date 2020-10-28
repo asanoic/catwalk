@@ -10,4 +10,10 @@ namespace http = beast::http;
 namespace ws = beast::websocket;
 namespace ip = asio::ip;
 
+using bx_request = http::request<http::vector_body<uint8_t>>;
+using bx_response = http::response<http::vector_body<uint8_t>>;
+
+using bx_request_parser = http::request_parser<http::vector_body<uint8_t>>;
+using bx_response_parser = http::response_parser<http::vector_body<uint8_t>>;
+
 #endif // BOOSTHEADERS_H

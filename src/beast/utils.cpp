@@ -50,3 +50,7 @@ string path_cat(string_view base, string_view path) {
     result.append(path.data(), path.size());
     return result;
 }
+
+vector<uint8_t> fromString(string s) {
+    return vector<uint8_t>(s.begin(), s.end());
+}

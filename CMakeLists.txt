@@ -41,6 +41,6 @@ if(MINGW)
     target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -lws2_32 -lmswsock)
 else()
     target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC -lpthread)
-endif()    
+endif()
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PUBLIC Boost::system)

@@ -13,12 +13,12 @@ void CwHttpSession::run() {
     // on the I/O objects in this session. Although not strictly necessary
     // for single-threaded contexts, this example code is written to be
     // thread-safe by default.
-    asio::dispatch(stream_.get_executor(), beast::bind_front_handler(&CwHttpSession::do_read, this->shared_from_this()));
+    asio::dispatch(stream_.get_executor(), beast::bind_front_handler(&CwHttpSession::read, this->shared_from_this()));
 }
 
-unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_request&& req) {
+bx_response* CwHttpSession::handle_request(string_view doc_root, bx_request&& req) const noexcept {
     auto const bad_request = [&req](string_view why) {
-        unique_ptr<bx_response> res = make_unique<bx_response>(http::status::bad_request, req.version());
+        bx_response* res = new bx_response(http::status::bad_request, req.version());
         res->set(http::field::server, kServerName);
         res->set(http::field::content_type, "text/html");
         res->keep_alive(req.keep_alive());
@@ -29,7 +29,7 @@ unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_r
 
     // Returns a not found response
     auto const not_found = [&req](string_view target) {
-        unique_ptr<bx_response> res = make_unique<bx_response>(http::status::not_found, req.version());
+        bx_response* res = new bx_response(http::status::not_found, req.version());
         res->set(http::field::server, kServerName);
         res->set(http::field::content_type, "text/html");
         res->keep_alive(req.keep_alive());
@@ -40,7 +40,7 @@ unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_r
 
     // Returns a server error response
     auto const server_error = [&req](string_view what) {
-        unique_ptr<bx_response> res = make_unique<bx_response>(http::status::internal_server_error, req.version());
+        bx_response* res = new bx_response(http::status::internal_server_error, req.version());
         res->set(http::field::server, kServerName);
         res->set(http::field::content_type, "text/html");
         res->keep_alive(req.keep_alive());
@@ -58,7 +58,7 @@ unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_r
         return bad_request("Illegal request-target");
 
     // Build the path to the requested file
-    string path = path_cat(doc_root, req.target());
+    string path = pathJoin(doc_root, req.target());
     if (req.target().back() == '/') path.append("index.html");
 
     // Attempt to open the file
@@ -80,25 +80,25 @@ unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_r
 
     // Respond to HEAD request
     if (req.method() == http::verb::head) {
-        unique_ptr<bx_response> res = make_unique<bx_response>(http::status::ok, req.version());
+        bx_response* res = new bx_response(http::status::ok, req.version());
         res->set(http::field::server, kServerName);
-        res->set(http::field::content_type, mime_type(path));
+        res->set(http::field::content_type, mimeType(path));
         res->content_length(data.size());
         res->keep_alive(req.keep_alive());
         return res;
     }
 
     // Respond to GET request
-    unique_ptr<bx_response> res = make_unique<bx_response>(http::status::ok, req.version());
+    bx_response* res = new bx_response(http::status::ok, req.version());
     res->set(http::field::server, kServerName);
-    res->set(http::field::content_type, mime_type(path));
+    res->set(http::field::content_type, mimeType(path));
     res->content_length(data.size());
     res->body() = move(data);
     res->keep_alive(req.keep_alive());
     return res;
 }
 
-void CwHttpSession::do_read() {
+void CwHttpSession::read() {
     // Construct a new parser for each message
     parser_.emplace();
 
@@ -110,15 +110,15 @@ void CwHttpSession::do_read() {
     stream_.expires_after(chrono::seconds(30));
 
     // Read a request using the parser-oriented interface
-    http::async_read(stream_, buffer_, *parser_, beast::bind_front_handler(&CwHttpSession::on_read, shared_from_this()));
+    http::async_read(stream_, buffer_, *parser_, beast::bind_front_handler(&CwHttpSession::onRead, shared_from_this()));
 }
 
-void CwHttpSession::on_read(beast::error_code ec, size_t bytes_transferred) {
+void CwHttpSession::onRead(beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
     // This means they closed the connection
     if (ec == http::error::end_of_stream)
-        return do_close();
+        return close();
 
     if (ec)
         return fail(ec, "read");
@@ -127,32 +127,32 @@ void CwHttpSession::on_read(beast::error_code ec, size_t bytes_transferred) {
     if (ws::is_upgrade(parser_->get())) {
         // Create a websocket session, transferring ownership
         // of both the socket and the HTTP request.
-        std::make_shared<CwWebSocketSession>(stream_.release_socket())->do_accept(parser_->release());
+        std::make_shared<CwWebSocketSession>(stream_.release_socket())->accept(parser_->release());
         return;
     }
 
-    responseHolder = handle_request(*doc_root_, parser_->release());
-    http::async_write(stream_, *responseHolder, beast::bind_front_handler(&CwHttpSession::on_write, shared_from_this(), responseHolder->need_eof()));
+    responseHolder.reset(handle_request(*doc_root_, parser_->release()));
+    http::async_write(stream_, *responseHolder, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), responseHolder->need_eof()));
 }
 
-void CwHttpSession::on_write(bool close, beast::error_code ec, size_t bytes_transferred) {
+void CwHttpSession::onWrite(bool closed, beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
     if (ec)
         return fail(ec, "write");
 
-    if (close) {
+    if (closed) {
         // This means we should close the connection, usually because
         // the response indicated the "Connection: close" semantic.
-        return do_close();
+        close();
+    } else {
+        // Inform the queue that a write completed
+        // Read another request
+        read();
     }
-
-    // Inform the queue that a write completed
-    // Read another request
-    do_read();
 }
 
-void CwHttpSession::do_close() {
+void CwHttpSession::close() {
     // Send a TCP shutdown
     beast::error_code ec;
     stream_.socket().shutdown(ip::tcp::socket::shutdown_send, ec);

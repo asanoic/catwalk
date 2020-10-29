@@ -8,7 +8,7 @@ void fail(beast::error_code ec, char const* what) {
 }
 
 // Return a reasonable mime type based on the extension of a file.
-string_view mime_type(string_view path) {
+string_view mimeType(string_view path) {
     static unordered_map<string_view, string_view> extTable = {
         {".htm", "text/html"},
         {".html", "text/html"},
@@ -41,7 +41,7 @@ string_view mime_type(string_view path) {
 
 // Append an HTTP rel-path to a local filesystem path.
 // The returned path is normalized for the platform.
-string path_cat(string_view base, string_view path) {
+string pathJoin(string_view base, string_view path) {
     if (base.empty()) return string(path);
 
     string result(base);

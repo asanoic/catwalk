@@ -9,16 +9,17 @@
 using namespace std;
 
 class CwListener {
-    asio::io_context& ioc_;
-    ip::tcp::acceptor acceptor_;
-    shared_ptr<const string> doc_root_;
-
 public:
     CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint,shared_ptr<const string> const& doc_root);
     void run();
 
 private:
-    void do_accept();
-    void on_accept(beast::error_code ec, ip::tcp::socket socket);
+    void accept();
+    void onAccept(beast::error_code ec, ip::tcp::socket socket);
+
+private:
+    asio::io_context& ioc_;
+    ip::tcp::acceptor acceptor_;
+    shared_ptr<const string> doc_root_;
 };
 #endif // LISTENER_H

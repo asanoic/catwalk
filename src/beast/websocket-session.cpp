@@ -6,7 +6,6 @@ CwWebSocketSession::CwWebSocketSession(ip::tcp::socket&& socket) :
     ws_(move(socket)) {
 }
 
-
 void CwWebSocketSession::accept(bx_request req) {
     // Set suggested timeout settings for the websocket
     ws_.set_option(ws::stream_base::timeout::suggested(beast::role_type::server));
@@ -21,8 +20,7 @@ void CwWebSocketSession::accept(bx_request req) {
 }
 
 void CwWebSocketSession::onAccept(beast::error_code ec) {
-    if (ec)
-        return fail(ec, "accept");
+    if (ec) return fail(ec, "accept");
 
     // Read a message
     read();
@@ -40,8 +38,7 @@ void CwWebSocketSession::onRead(beast::error_code ec, std::size_t bytes_transfer
     if (ec == ws::error::closed)
         return;
 
-    if (ec)
-        fail(ec, "read");
+    if (ec) fail(ec, "read");
 
     // Echo the message
     ws_.text(ws_.got_text());

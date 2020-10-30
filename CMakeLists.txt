@@ -26,6 +26,7 @@ list(APPEND beast-src
     "${pwd}/src/beast/http-session.cpp"
     "${pwd}/src/beast/websocket-session.h"
     "${pwd}/src/beast/websocket-session.cpp"
+    "${pwd}/src/api/catwalk.h"
 )
 
 add_executable(${CMAKE_PROJECT_NAME} ${beast-src})

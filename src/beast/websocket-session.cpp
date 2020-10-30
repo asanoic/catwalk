@@ -35,9 +35,7 @@ void CwWebSocketSession::onRead(beast::error_code ec, std::size_t bytes_transfer
     boost::ignore_unused(bytes_transferred);
 
     // This indicates that the websocket_session was closed
-    if (ec == ws::error::closed)
-        return;
-
+    if (ec == ws::error::closed) return;
     if (ec) fail(ec, "read");
 
     // Echo the message
@@ -48,8 +46,7 @@ void CwWebSocketSession::onRead(beast::error_code ec, std::size_t bytes_transfer
 void CwWebSocketSession::onWrite(beast::error_code ec, std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
-    if (ec)
-        return fail(ec, "write");
+    if (ec) return fail(ec, "write");
 
     // Clear the buffer
     buffer_.consume(buffer_.size());

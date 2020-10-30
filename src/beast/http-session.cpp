@@ -13,7 +13,7 @@ void CwHttpSession::run() {
     // on the I/O objects in this session. Although not strictly necessary
     // for single-threaded contexts, this example code is written to be
     // thread-safe by default.
-    asio::dispatch(stream_.get_executor(), beast::bind_front_handler(&CwHttpSession::read, this->shared_from_this()));
+    asio::dispatch(stream_.get_executor(), beast::bind_front_handler(&CwHttpSession::read, shared_from_this()));
 }
 
 unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_request&& req) const noexcept {
@@ -117,9 +117,9 @@ void CwHttpSession::onRead(beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
     // This means they closed the connection
-    if (ec == http::error::end_of_stream) close();
+    if (ec == http::error::end_of_stream) return close();
 
-    if (ec) fail(ec, "read");
+    if (ec) return fail(ec, "read");
 
     // See if it is a WebSocket Upgrade
     if (ws::is_upgrade(parser_->get())) {
@@ -128,19 +128,16 @@ void CwHttpSession::onRead(beast::error_code ec, size_t bytes_transferred) {
         std::make_shared<CwWebSocketSession>(stream_.release_socket())->accept(parser_->release());
 
     } else {
-        unique_ptr<bx_response> response = handle_request(*doc_root_, parser_->release());
-        bx_response* resPointer = response.get();
-        http::async_write(stream_, *resPointer, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), move(response)));
+        shared_ptr<bx_response> response(handle_request(*doc_root_, parser_->release()).release());
+        http::async_write(stream_, *response, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), response));
     }
 }
 
-void CwHttpSession::onWrite(unique_ptr<bx_response> res, beast::error_code ec, size_t bytes_transferred) {
+void CwHttpSession::onWrite(shared_ptr<bx_response> res, beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
     if (ec) fail(ec, "write");
-    if (res->need_eof())
-        close();
-    else
-        read();
+    if (res->need_eof()) return close();
+    read();
 }
 
 void CwHttpSession::close() {

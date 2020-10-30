@@ -56,7 +56,7 @@ void CwListener::onAccept(beast::error_code ec, ip::tcp::socket socket) {
         fail(ec, "accept");
     } else {
         // Create the http session and run it
-        std::make_shared<CwHttpSession>(move(socket), doc_root_)->run();
+        make_shared<CwHttpSession>(move(socket), doc_root_)->run();
     }
     // Accept another connection
     accept();

@@ -30,14 +30,14 @@ int main(int argc, char* argv[]) {
 
     asio::io_context ioc(threads);
 
-    unique_ptr<CwListener> listener = make_unique<CwListener>(ioc, ip::tcp::endpoint(ip::address(), port), doc_root);
+    auto listener = make_unique<CwListener>(ioc, ip::tcp::endpoint(ip::address(), port), doc_root);
     listener->run();
 
     asio::signal_set signals(ioc, SIGINT, SIGTERM);
     signals.async_wait(bind(&asio::io_context::stop, &ioc));
 
     cout << "port " << port << ", and " << threads << " thread" << (threads > 1 ? "s" : "") << endl;
-    vector<thread> v(threads - 1);
+    vector<thread> v;
     v.reserve(threads - 1);
     for (auto i = threads - 1; i > 0; --i)
         v.emplace_back(&asio::io_context::run, &ioc);

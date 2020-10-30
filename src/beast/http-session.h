@@ -15,12 +15,10 @@ class CwHttpSession : public enable_shared_from_this<CwHttpSession> {
 public:
     // Take ownership of the socket
     CwHttpSession(ip::tcp::socket&& socket, shared_ptr<const string> const& doc_root);
-    // Start the session
-    void run();
+    void read();
 
 private:
     unique_ptr<bx_response> handle_request(string_view doc_root, bx_request&& req) const noexcept;
-    void read();
     void onRead(beast::error_code ec, size_t bytes_transferred);
     void onWrite(shared_ptr<bx_response> res, beast::error_code ec, size_t bytes_transferred);
     void close();

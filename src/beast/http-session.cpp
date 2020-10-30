@@ -8,14 +8,6 @@ CwHttpSession::CwHttpSession(ip::tcp::socket&& socket, shared_ptr<const string> 
     doc_root_(doc_root) {
 }
 
-void CwHttpSession::run() {
-    // We need to be executing within a strand to perform async operations
-    // on the I/O objects in this session. Although not strictly necessary
-    // for single-threaded contexts, this example code is written to be
-    // thread-safe by default.
-    asio::dispatch(stream_.get_executor(), beast::bind_front_handler(&CwHttpSession::read, shared_from_this()));
-}
-
 unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_request&& req) const noexcept {
     auto const bad_request = [&req](string_view why) {
         unique_ptr<bx_response> res = make_unique<bx_response>(http::status::bad_request, req.version());

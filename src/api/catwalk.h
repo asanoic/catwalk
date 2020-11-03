@@ -59,14 +59,10 @@ struct CwRouter {
     virtual ~CwRouter() noexcept;
 
     virtual CwRouter* use(string path, CwFullHandler handler) noexcept = 0;
-    virtual CwRouter* use(string path, CwHandler handler) noexcept = 0;
     virtual CwRouter* use(string path, CwRouter* router) noexcept = 0;
-    virtual CwRouter* use(CwFullHandler handler) noexcept = 0;
-    virtual CwRouter* use(CwHandler handler) noexcept = 0;
     virtual CwRouter* use(CwRouter* router) noexcept = 0;
-
-    virtual CwRouter* add(CwHttpVerb method, CwFullHandler handler) noexcept = 0;
-    virtual CwRouter* add(CwHttpVerb method, CwHandler handler) noexcept = 0;
+    virtual CwRouter* set(CwHttpVerb method, string path, CwFullHandler handler) noexcept = 0;
+    virtual CwRouter* set(CwHttpVerb method, string path, CwHandler handler) noexcept = 0;
 };
 
 struct CwApplication : CwRouter {

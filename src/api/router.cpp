@@ -52,8 +52,17 @@ struct CwRouterImpl : CwRouter {
     vector<CwRouteTuple> list;
 
 private:
-    vector<string_view> tokenize(string const&) {
-        return {};
+    vector<string_view> tokenize(string const& path) {
+        string::const_iterator pos = path.cbegin(), next = path.cbegin();
+        vector<string_view> ret;
+        while (true) {
+            pos = next;
+            if (pos == path.end()) break;
+            while (next != path.cend() && *next != '/') ++next;
+            if (next != path.cend() && next == pos) ++next;
+            ret.emplace_back(&*pos, next - pos);
+        }
+        return ret;
     }
 
     bool matched(CwRouteTuple const& tuple, CwConstSpan<string_view> path) {

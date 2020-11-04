@@ -18,7 +18,7 @@ using CwConstSpan = pair<typename T::const_iterator, typename T::const_iterator>
 using CwBody = vector<uint8_t>;
 
 enum class CwHttpVerb : int {
-    all = 0,
+    none = 0,
     delete_,
     get,
     head,
@@ -51,19 +51,19 @@ struct CwResponse {
     vector<any>& data() const noexcept;
 };
 
-using CwHandler = function<void(CwRequest*, CwResponse)>;
+using CwHandler = function<void(CwRequest*, CwResponse*)>;
 using CwNextFunc = function<void(void)>;
-using CwFullHandler = function<void(CwRequest*, CwResponse, CwNextFunc)>;
+using CwFullHandler = function<void(CwRequest*, CwResponse*, CwNextFunc)>;
 
 struct CwRouter {
     static CwRouter* newRouter();
     virtual ~CwRouter() noexcept;
 
-    virtual CwRouter* use(string path, CwFullHandler handler) noexcept = 0;
-    virtual CwRouter* use(string path, CwRouter* router) noexcept = 0;
+    virtual CwRouter* use(string const& path, CwFullHandler handler) noexcept = 0;
+    virtual CwRouter* use(string const& path, CwRouter* router) noexcept = 0;
     virtual CwRouter* use(CwRouter* router) noexcept = 0;
-    virtual CwRouter* set(CwHttpVerb method, string path, CwFullHandler handler) noexcept = 0;
-    virtual CwRouter* set(CwHttpVerb method, string path, CwHandler handler) noexcept = 0;
+    virtual CwRouter* set(CwHttpVerb method, string const& path, CwFullHandler handler) noexcept = 0;
+    virtual CwRouter* set(CwHttpVerb method, string const& path, CwHandler handler) noexcept = 0;
 };
 
 struct CwApplication : CwRouter {

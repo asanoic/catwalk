@@ -2,42 +2,83 @@
 
 #include "../lib/path.h"
 
+struct CwRouteTuple {
+    vector<string_view> tokenizedPath;
+    CwHttpVerb method;
+    CwFullHandler handler;
+
+    CwRouteTuple(vector<string_view>&& tokenizedPath, CwHttpVerb method, CwFullHandler handler) :
+        tokenizedPath(move(tokenizedPath)),
+        method(method),
+        handler(handler) {
+    }
+
+    CwRouteTuple(CwRouteTuple&& o) :
+        tokenizedPath(move(o.tokenizedPath)),
+        method(move(o.method)),
+        handler(move(o.handler)) {
+    }
+};
+
 struct CwRouterImpl : CwRouter {
-    virtual ~CwRouterImpl() noexcept override;
+    ~CwRouterImpl() noexcept override;
 
-    virtual CwRouter* use(string path, CwFullHandler handler) noexcept override;
-    virtual CwRouter* use(string path, CwRouter* router) noexcept override;
-    virtual CwRouter* use(CwRouter* router) noexcept override;
-    virtual CwRouter* set(CwHttpVerb method, string path, CwFullHandler handler) noexcept override;
-    virtual CwRouter* set(CwHttpVerb method, string path, CwHandler handler) noexcept override;
+    CwRouter* use(string const& path, CwFullHandler handler) noexcept override {
+        list.emplace_back(tokenize(path), CwHttpVerb::none, handler);
+        return this;
+    }
 
-    vector<pair<CwPath, CwRouterImpl*>> list;
-    string currentPath;
+    CwRouter* use(string const& path, CwRouter* router) noexcept override {
+        list.emplace_back(tokenize(path), CwHttpVerb::none, bind(&CwRouterImpl::handler, router, placeholders::_1, placeholders::_2, placeholders::_3));
+        return this;
+    }
+
+    CwRouter* use(CwRouter* router) noexcept override {
+        list.emplace_back(tokenize(""), CwHttpVerb::none, bind(&CwRouterImpl::handler, router, placeholders::_1, placeholders::_2, placeholders::_3));
+        return this;
+    }
+
+    CwRouter* set(CwHttpVerb method, string const& path, CwFullHandler handler) noexcept override {
+        list.emplace_back(tokenize(path), method, handler);
+        return this;
+    }
+
+    CwRouter* set(CwHttpVerb method, string const& path, CwHandler handler) noexcept override {
+        list.emplace_back(tokenize(path), method, bind(handler, placeholders::_1, placeholders::_2));
+        return this;
+    }
+
+    vector<CwRouteTuple> list;
+
+private:
+    vector<string_view> tokenize(string const&) {
+        return {};
+    }
+
+    bool matched(CwRouteTuple const& tuple, CwConstSpan<string_view> path) {
+        return false;
+    }
+
+    void handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
+        for (auto const& tuple : list) {
+            if (!matched(tuple, CwConstSpan<string_view>())) continue;
+            tuple.handler(req, res, next);
+        }
+    }
+
+    void action(vector<CwRouteTuple>::iterator it, CwRequest* req, CwResponse* res) {
+        if (it == list.end()) return;
+        it->handler(req, res, CwNextFunc());
+    }
+
+    void next(vector<CwRouteTuple>::iterator it, CwRequest* req, CwResponse* res) {
+        if (matched(*it, CwConstSpan<string_view>())) {
+            action(it, req, res);
+            ++it;
+        }
+    }
 };
 
 CwRouter* CwRouter::newRouter() {
     return new CwRouterImpl();
-}
-
-CwRouter* CwRouterImpl::use(string path, CwFullHandler handler) noexcept {
-    list.emplace_back(CwPath(path, false), nullptr);
-    return this;
-}
-
-CwRouter* CwRouterImpl::use(string path, CwRouter* router) noexcept {
-    list.emplace_back(CwPath(path, false), router);
-    return this;
-}
-
-CwRouter* CwRouterImpl::use(CwRouter* router) noexcept {
-    list.emplace_back(CwPath("", false), router);
-    return this;
-}
-
-CwRouter* CwRouterImpl::set(CwHttpVerb method, string path, CwFullHandler handler) noexcept {
-    return this;
-}
-
-CwRouter* CwRouterImpl::set(CwHttpVerb method, string path, CwHandler handler) noexcept {
-    return this;
 }

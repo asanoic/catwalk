@@ -36,8 +36,6 @@ struct CwRequest {
     const string_view query(string_view name) const noexcept;
     const string_view get(string_view header) const noexcept;
     const vector<string_view> headers() const noexcept;
-    const string_view originalUrl() const noexcept;
-    const string_view baseUrl() const noexcept;
     const string_view path() const noexcept;
     const CwHttpVerb method() const noexcept;
     vector<any>& data() const noexcept;
@@ -57,7 +55,8 @@ using CwFullHandler = function<void(CwRequest*, CwResponse*, CwNextFunc)>;
 
 struct CwRouter {
     static CwRouter* newRouter();
-    virtual ~CwRouter() noexcept;
+    virtual ~CwRouter() noexcept {
+    }
 
     virtual CwRouter* use(string const& path, CwFullHandler handler) noexcept = 0;
     virtual CwRouter* use(string const& path, CwRouter* router) noexcept = 0;
@@ -67,7 +66,9 @@ struct CwRouter {
 };
 
 struct CwApplication : CwRouter {
-    void start(uint16_t port) noexcept;
+    virtual ~CwApplication() {
+    }
+    virtual int start(uint16_t port) noexcept;
 };
 
 #endif // CATWALK_H

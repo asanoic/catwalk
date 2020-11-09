@@ -3,10 +3,10 @@
 #include "http-session.h"
 #include "utils.h"
 
-CwListener::CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, shared_ptr<const string> const& doc_root) :
+CwListener::CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, CwHandler handler) :
     ioc_(ioc),
     acceptor_(asio::make_strand(ioc)),
-    doc_root_(doc_root) {
+    handler(handler) {
     beast::error_code ec;
 
     // Open the acceptor
@@ -56,7 +56,7 @@ void CwListener::onAccept(beast::error_code ec, ip::tcp::socket socket) {
         fail(ec, "accept");
     } else {
         // Create the http session and run it
-        make_shared<CwHttpSession>(move(socket), doc_root_)->read();
+        make_shared<CwHttpSession>(move(socket), handler)->read();
     }
     // Accept another connection
     accept();

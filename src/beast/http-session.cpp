@@ -3,9 +3,9 @@
 #include "utils.h"
 #include "websocket-session.h"
 
-CwHttpSession::CwHttpSession(ip::tcp::socket&& socket, shared_ptr<const string> const& doc_root) :
+CwHttpSession::CwHttpSession(ip::tcp::socket&& socket, CwHandler handler) :
     stream_(move(socket)),
-    doc_root_(doc_root) {
+    handler(handler) {
 }
 
 unique_ptr<bx_response> CwHttpSession::handle_request(string_view doc_root, bx_request&& req) const noexcept {
@@ -120,7 +120,7 @@ void CwHttpSession::onRead(beast::error_code ec, size_t bytes_transferred) {
         std::make_shared<CwWebSocketSession>(stream_.release_socket())->accept(parser_->release());
 
     } else {
-        shared_ptr<bx_response> response(handle_request(*doc_root_, parser_->release()).release());
+        shared_ptr<bx_response> response(handle_request(".", parser_->release()).release());
         http::async_write(stream_, *response, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), response));
     }
 }

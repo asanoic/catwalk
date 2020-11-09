@@ -43,7 +43,6 @@ string_view mimeType(string_view path) {
 // The returned path is normalized for the platform.
 string pathJoin(string_view base, string_view path) {
     if (base.empty()) return string(path);
-
     string result(base);
     char constexpr path_separator = '/';
     if (result.back() == path_separator) result.resize(result.size() - 1);

@@ -3,14 +3,14 @@
 
 #include <memory>
 #include <string>
+using namespace std;
 
 #include "boost-headers.h"
-
-using namespace std;
+#include "CwRouter.h"
 
 class CwListener {
 public:
-    CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint,shared_ptr<const string> const& doc_root);
+    CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, CwHandler handler);
     void run();
 
 private:
@@ -20,6 +20,6 @@ private:
 private:
     asio::io_context& ioc_;
     ip::tcp::acceptor acceptor_;
-    shared_ptr<const string> doc_root_;
+    CwHandler handler;
 };
 #endif // LISTENER_H

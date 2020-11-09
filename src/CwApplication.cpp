@@ -1,31 +1,25 @@
-#include <algorithm>
-#include <cstdlib>
-#include <functional>
-#include <iostream>
+#include "CwApplication.h"
+#include "CwApplicationData.h"
+
 #include <memory>
-#include <string>
 #include <thread>
-#include <vector>
-
-#include "listener.h"
-
+#include <iostream>
 using namespace std;
 
-int main(int argc, char* argv[]) {
+#include "beast/listener.h"
 
-    if (argc != 3) {
-        cerr << "Usage: catwalk <port> <doc_root>" << endl
-             << "Example:" << endl
-             << "    catwalk 8080 ." << endl;
-        return EXIT_FAILURE;
-    }
-
+void __attribute__((constructor)) initForOpenFileLimited() {
 #ifdef __MINGW64__
     _setmaxstdio(2048);
 #endif
+}
 
-    auto const port = atoi(argv[1]);
-    auto const doc_root = make_shared<string>(argv[2]);
+CW_OBJECT_CONSTRUCTOR(CwApplication, CwRouter) {
+}
+
+int CwApplication::start(uint16_t port) noexcept {
+
+    auto const doc_root = make_shared<string>(".");
     auto const threads = max<int>(1, thread::hardware_concurrency());
 
     asio::io_context ioc(threads);

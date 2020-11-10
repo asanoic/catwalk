@@ -2,17 +2,14 @@
 #define CWOBJECT_H
 
 #define CW_OBJECT(CLASSNAME)                                  \
-private:                                                      \
-    CLASSNAME(const CLASSNAME&) = delete;                     \
-    CLASSNAME(CLASSNAME&&) = delete;                          \
-    CLASSNAME& operator=(const CLASSNAME&) = delete;          \
-    CLASSNAME& operator=(CLASSNAME&&) = delete;               \
-                                                              \
 protected:                                                    \
     explicit CLASSNAME(CwObjectData* data, CwObject* parent); \
                                                               \
 public:                                                       \
     explicit CLASSNAME(CwObject* parent = nullptr);           \
+    CLASSNAME(const CLASSNAME&) = delete;                     \
+    CLASSNAME& operator=(const CLASSNAME&) = delete;          \
+    CLASSNAME& operator=(CLASSNAME&&) = delete;               \
                                                               \
 private:
 

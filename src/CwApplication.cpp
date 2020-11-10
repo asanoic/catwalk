@@ -7,6 +7,7 @@
 using namespace std;
 
 #include "beast/listener.h"
+#include "beast/utils.h"
 
 void __attribute__((constructor)) initForOpenFileLimited() {
 #ifdef __MINGW64__
@@ -48,4 +49,39 @@ int CwApplication::start(uint16_t port) noexcept {
 }
 
 void CwApplicationData::handleProc(CwRequest* req, CwResponse* res) {
+    if (req->method() != CwHttpVerb::get && req->method() != CwHttpVerb::get) {
+        res->setStatus((int)http::status::bad_request)
+            ->setHeader("content-type", "text/html")
+            ->setBody(fromString("Bad Request"));
+        return;
+    }
+
+    // Request path must be absolute and not contain "..".
+    if (req->path().empty() || req->path()[0] != '/' || req->path().find("..") != string_view::npos) {
+        res->setStatus((int)http::status::bad_request)
+            ->setHeader("content-type", "text/html")
+            ->setBody(fromString("Illegal request-target"));
+        return;
+    }
+
+    string path = pathJoin(".", req->path());
+    if (req->path().back() == '/') path.append("index.html");
+
+    beast::error_code ec;
+    beast::file_stdio fs;
+    fs.open(path.c_str(), beast::file_mode::scan, ec);
+    vector<uint8_t> data(fs.size(ec));
+    fs.read(data.data(), data.size(), ec);
+
+    if (req->method() == CwHttpVerb::head) {
+        res->setStatus((int)http::status::ok)
+            ->setHeader("content-type", string(mimeType(path)));
+        return;
+    }
+
+    res->setStatus((int)http::status::ok)
+        ->setHeader("content-type", string(mimeType(path)))
+        ->setBody(move(data));
+    return;
+
 }

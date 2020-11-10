@@ -7,6 +7,8 @@
 #include "CwCatwalk.h"
 #include "CwObject.h"
 
+class CwHttpSession;
+
 class CwRequestData;
 class CwRequest : public CwObject {
     CW_OBJECT(CwRequest)
@@ -20,6 +22,8 @@ public:
     const string_view path() const noexcept;
     const CwHttpVerb method() const noexcept;
     vector<any>& data() const noexcept;
+
+    friend class CwHttpSession;
 };
 
 #endif // CWREQUEST_H

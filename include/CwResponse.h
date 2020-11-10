@@ -16,6 +16,9 @@ public:
     CwResponse* setStatus(int code) noexcept;
     void send() noexcept;
     vector<any>& data() const noexcept;
+
+    friend class CwHttpSession;
+
 };
 
 #endif // CWRESPONSE_H

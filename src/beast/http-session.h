@@ -7,8 +7,10 @@
 #include <optional>
 using namespace std;
 
-#include "boost-headers.h"
+#include "CwRequest.h"
+#include "CwResponse.h"
 #include "CwRouter.h"
+#include "boost-headers.h"
 
 // Handles an HTTP server connection
 class CwHttpSession : public enable_shared_from_this<CwHttpSession> {
@@ -18,9 +20,8 @@ public:
     void read();
 
 private:
-    unique_ptr<bx_response> handle_request(string_view doc_root, bx_request&& req) const noexcept;
-    void onRead(beast::error_code ec, size_t bytes_transferred);
-    void onWrite(shared_ptr<bx_response> res, beast::error_code ec, size_t bytes_transferred);
+    void onRead(unique_ptr<CwRequest> request, beast::error_code ec, size_t bytes_transferred);
+    void onWrite(unique_ptr<CwResponse> response, beast::error_code ec, size_t bytes_transferred);
     void close();
 
 private:

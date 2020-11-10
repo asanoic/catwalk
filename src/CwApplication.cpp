@@ -27,7 +27,7 @@ int CwApplication::start(uint16_t port) noexcept {
     auto listener = make_unique<CwListener>(
         ioc,
         ip::tcp::endpoint(ip::address(), port),
-        beast::bind_front_handler(&CwApplicationData::handleProc, d));
+        bind(&CwApplicationData::handleProc, d, placeholders::_1, placeholders::_2));
 
     listener->run();
 

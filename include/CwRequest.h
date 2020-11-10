@@ -16,7 +16,7 @@ public:
     const string_view param(string_view name) const noexcept;
     const string_view query(string_view name) const noexcept;
     const string_view get(string_view header) const noexcept;
-    const vector<string_view> headers() const noexcept;
+    const vector<string_view>& headers() const noexcept;
     const string_view path() const noexcept;
     const CwHttpVerb method() const noexcept;
     vector<any>& data() const noexcept;

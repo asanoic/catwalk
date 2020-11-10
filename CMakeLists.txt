@@ -32,22 +32,22 @@ list(APPEND beast-src
     "${pwd}/include/CwApplication.h"
     "${pwd}/src/CwApplicationData.h"
     "${pwd}/src/CwApplication.cpp"
-    "${pwd}/src/beast/boost-headers.h"
-    "${pwd}/src/beast/listener.h"
-    "${pwd}/src/beast/listener.cpp"
-    "${pwd}/src/beast/utils.h"
-    "${pwd}/src/beast/utils.cpp"
-    "${pwd}/src/beast/http-session.h"
-    "${pwd}/src/beast/http-session.cpp"
-    "${pwd}/src/beast/websocket-session.h"
-    "${pwd}/src/beast/websocket-session.cpp"
+    "${pwd}/src/engine/boost-headers.h"
+    "${pwd}/src/engine/listener.h"
+    "${pwd}/src/engine/listener.cpp"
+    "${pwd}/src/engine/utils.h"
+    "${pwd}/src/engine/utils.cpp"
+    "${pwd}/src/engine/http-session.h"
+    "${pwd}/src/engine/http-session.cpp"
+    "${pwd}/src/engine/websocket-session.h"
+    "${pwd}/src/engine/websocket-session.cpp"
 )
 
 add_library(${PROJECT_NAME} SHARED ${beast-src})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC BOOST_ASIO_NO_DEPRECATED BOOST_BEAST_USE_STD_STRING_VIEW)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
-target_include_directories(${PROJECT_NAME} PUBLIC "${pwd}/include" PRIVATE "${pwd}/src")
+target_include_directories(${PROJECT_NAME} PUBLIC "${pwd}/include" PRIVATE "${pwd}/src" "${pwd}/src/engine")
 target_link_libraries(${PROJECT_NAME} PUBLIC Boost::system)
 
 if(MINGW)

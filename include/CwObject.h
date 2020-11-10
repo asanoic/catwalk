@@ -1,16 +1,16 @@
 #ifndef CWOBJECT_H
 #define CWOBJECT_H
 
-#define CW_OBJECT(CLASSNAME)                                  \
-protected:                                                    \
-    explicit CLASSNAME(CwObjectData* data, CwObject* parent); \
-                                                              \
-public:                                                       \
-    explicit CLASSNAME(CwObject* parent = nullptr);           \
-    CLASSNAME(const CLASSNAME&) = delete;                     \
-    CLASSNAME& operator=(const CLASSNAME&) = delete;          \
-    CLASSNAME& operator=(CLASSNAME&&) = delete;               \
-                                                              \
+#define CW_OBJECT(CLASSNAME)                         \
+protected:                                           \
+    explicit CLASSNAME(CwObjectData* data);          \
+                                                     \
+public:                                              \
+    explicit CLASSNAME();                            \
+    CLASSNAME(const CLASSNAME&) = delete;            \
+    CLASSNAME& operator=(const CLASSNAME&) = delete; \
+    CLASSNAME& operator=(CLASSNAME&&) = delete;      \
+                                                     \
 private:
 
 class CwObjectData;
@@ -19,8 +19,6 @@ class CwObject {
 
 public:
     virtual ~CwObject();
-    CwObject* parent() const;
-    CwObject* setParent(CwObject* parent);
 
 protected:
     CwObjectData* _data;

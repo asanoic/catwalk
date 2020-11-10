@@ -2,7 +2,7 @@
 #define CWRESPONSEDATA_H
 
 #include "CwObjectData.h"
-#include "beast/boost-headers.h"
+#include "engine/boost-headers.h"
 
 class CwResponse;
 struct CwResponseData : CwObjectData {

@@ -22,7 +22,6 @@ public:
     CwRouter* use(const string& path, CwFullHandler handler) noexcept;
     CwRouter* use(const string& path, CwRouter* router) noexcept;
     CwRouter* use(CwRouter* router) noexcept;
-    CwRouter* set(CwHttpVerb method, const string& path, CwFullHandler handler) noexcept;
     CwRouter* set(CwHttpVerb method, const string& path, CwHandler handler) noexcept;
 };
 

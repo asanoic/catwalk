@@ -24,26 +24,31 @@ void CwHttpSession::read() {
 
 void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
+    CW_GET_DATAEX(dq, CwRequest, request);
 
     // This means they closed the connection
     if (ec == http::error::end_of_stream) return close();
     if (ec) return fail(ec, "read");
 
     // See if it is a WebSocket Upgrade
-    //    if (ws::is_upgrade(d->beastRequestParser)) {
-    //        // Create a websocket session, transferring ownership
-    //        // of both the socket and the HTTP request.
-    //        std::make_shared<CwWebSocketSession>(stream_.release_socket())->accept(parser_->release());
+    if (ws::is_upgrade(dq->beastRequestParser.get())) {
+        // Create a websocket session, transferring ownership
+        // of both the socket and the HTTP request.
+        std::make_shared<CwWebSocketSession>(stream_.release_socket())->accept(dq->beastRequestParser.release());
 
-    //    } else {
-    auto response = make_unique<CwResponse>();
-    CW_GET_DATAEX(dq, CwRequest, request);
-    CW_GET_DATAEX(dp, CwResponse, response);
-    handler(request.get(), response.get());
-    dp->beastResponse.prepare_payload();
-    dp->beastResponse.keep_alive(dq->beastRequestParser.keep_alive());
-    http::async_write(stream_, dp->beastResponse, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), move(response)));
-    //    }
+    } else {
+        auto response = make_unique<CwResponse>();
+        CW_GET_DATAEX(dp, CwResponse, response);
+        handler(request.get(), response.get());
+        dp->beastResponse.prepare_payload();
+        dp->beastResponse.keep_alive(dq->beastRequestParser.keep_alive());
+        if (dp->sent) {
+            http::async_write(stream_, dp->beastResponse, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), move(response)));
+        } else {
+            cout << "missing call CwResponse::send()?" << endl;
+            return close();
+        }
+    }
 }
 
 void CwHttpSession::onWrite(unique_ptr<CwResponse> response, beast::error_code ec, size_t bytes_transferred) {

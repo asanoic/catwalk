@@ -7,7 +7,6 @@
 
 class CwApplication;
 struct CwApplicationData : CwRouterData {
-    void handleProc(CwRequest* req, CwResponse* res);
 };
 
 #endif // CWAPPLICATIONDATA_H

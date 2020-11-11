@@ -4,5 +4,7 @@ using namespace std;
 #include "CwApplication.h"
 
 int main() {
-    make_unique<CwApplication>()->start(8080);
+    auto app = make_unique<CwApplication>();
+    app->use("", bind(&CwApplication::demo, app.get(), placeholders::_1, placeholders::_2, placeholders::_3));
+    app->start(8080);
 }

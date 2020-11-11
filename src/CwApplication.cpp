@@ -28,7 +28,7 @@ int CwApplication::start(uint16_t port) noexcept {
     auto listener = make_unique<CwListener>(
         ioc,
         ip::tcp::endpoint(ip::address(), port),
-        bind(&CwApplicationData::handleProc, d, placeholders::_1, placeholders::_2));
+        bind(&CwApplicationData::handler, d, placeholders::_1, placeholders::_2, CwNextFunc()));
 
     listener->run();
 
@@ -48,19 +48,21 @@ int CwApplication::start(uint16_t port) noexcept {
     return EXIT_SUCCESS;
 }
 
-void CwApplicationData::handleProc(CwRequest* req, CwResponse* res) {
+void CwApplication::demo(CwRequest* req, CwResponse* res, CwNextFunc next) {
     if (req->method() != CwHttpVerb::get && req->method() != CwHttpVerb::get) {
         res->setStatus((int)http::status::bad_request)
-            ->setHeader("content-type", "text/html")
-            ->setBody(fromString("Bad Request"));
+            ->setHeader("Content-Type", "text/html")
+            ->setBody(fromString("Bad Request"))
+            ->send();
         return;
     }
 
     // Request path must be absolute and not contain "..".
     if (req->path().empty() || req->path()[0] != '/' || req->path().find("..") != string_view::npos) {
         res->setStatus((int)http::status::bad_request)
-            ->setHeader("content-type", "text/html")
-            ->setBody(fromString("Illegal request-target"));
+            ->setHeader("Content-Type", "text/html")
+            ->setBody(fromString("Illegal request-target"))
+            ->send();
         return;
     }
 
@@ -75,13 +77,14 @@ void CwApplicationData::handleProc(CwRequest* req, CwResponse* res) {
 
     if (req->method() == CwHttpVerb::head) {
         res->setStatus((int)http::status::ok)
-            ->setHeader("content-type", string(mimeType(path)));
+            ->setHeader("Content-Type", string(mimeType(path)))
+            ->send();
         return;
     }
 
     res->setStatus((int)http::status::ok)
-        ->setHeader("content-type", string(mimeType(path)))
-        ->setBody(move(data));
+        ->setHeader("Content-Type", string(mimeType(path)))
+        ->setBody(move(data))
+        ->send();
     return;
-
 }

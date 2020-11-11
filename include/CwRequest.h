@@ -8,6 +8,7 @@
 #include "CwObject.h"
 
 class CwHttpSession;
+class CwWebSocketSession;
 
 class CwRequestData;
 class CwRequest : public CwObject {
@@ -24,6 +25,7 @@ public:
     vector<any>& data() const noexcept;
 
     friend class CwHttpSession;
+    friend class CwWebSocketSession;
 };
 
 #endif // CWREQUEST_H

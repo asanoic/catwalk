@@ -7,6 +7,9 @@
 #include "CwCatwalk.h"
 #include "CwObject.h"
 
+class CwHttpSession;
+class CwWebSocketSession;
+
 class CwResponseData;
 class CwResponse : public CwObject {
     CW_OBJECT(CwResponse)
@@ -18,6 +21,7 @@ public:
     vector<any>& data() const noexcept;
 
     friend class CwHttpSession;
+    friend class CwWebSocketSession;
 
 };
 

@@ -6,11 +6,11 @@
 using namespace std;
 
 #include "boost-headers.h"
-#include "CwRouter.h"
+#include "CwRouterData.h"
 
 class CwListener {
 public:
-    CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, CwHandler handler);
+    CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, CwFullHandler handler);
     void run();
 
 private:
@@ -20,6 +20,6 @@ private:
 private:
     asio::io_context& ioc_;
     ip::tcp::acceptor acceptor_;
-    CwHandler handler;
+    CwFullHandler handler;
 };
 #endif // LISTENER_H

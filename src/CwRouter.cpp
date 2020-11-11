@@ -1,8 +1,12 @@
 #include "CwRouter.h"
 #include "CwRouterData.h"
 
+#include <algorithm>
 #include <iostream>
 using namespace std;
+
+#include "CwRequestData.h"
+#include "utils.h"
 
 CW_OBJECT_CONSTRUCTOR(CwRouter, CwObject) {
 }
@@ -38,20 +42,17 @@ CwRouter* CwRouter::set(CwHttpVerb method, const string& path, CwHandler handler
 }
 
 vector<string_view> CwRouterData::tokenize(const string& path) {
-    string::const_iterator pos = path.cbegin(), next = path.cbegin();
-    vector<string_view> ret;
-    while (true) {
-        pos = next;
-        if (pos == path.end()) break;
-        while (next != path.cend() && *next != '/') ++next;
-        if (next != path.cend() && next == pos) ++next;
-        ret.emplace_back(&*pos, next - pos);
-    }
-    return ret;
+    return ::tokenize(path.cbegin(), path.cend());
 }
 
-bool CwRouterData::matched(const CwRouteTuple& tuple, CwConstSpan<string_view> path) {
-    return true;
+int CwRouterData::matched(const CwRouteTuple& tuple, CwRequest* req) {
+    CW_GET_DATAEX(dq, CwRequest, req);
+    cout << tuple.tokenizedPath.size() << ", " << dq->preparedPath.size() << endl;
+    auto index = mismatch(dq->pathPos, dq->preparedPath.cend(), tuple.tokenizedPath.cbegin(), tuple.tokenizedPath.cend(), [](string_view a, string_view b) {
+        if (a == b) return true;
+        return a.front() == ':';
+    });
+    return distance(index.first, dq->preparedPath.cend());
 }
 
 void CwRouterData::handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
@@ -64,8 +65,17 @@ void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* re
     CwNextFunc next = [it, req, res, this]() {
         this->action(std::next(it), req, res);
     };
-    if (matched(*it, CwConstSpan<string_view>())) {
-        it->handler(req, res, next);
+    CW_GET_DATAEX(dq, CwRequest, req);
+    if (int matchLength = matched(*it, req); matchLength > 0) {
+        if (it->method == CwHttpVerb::none) {
+            vector<string_view>::const_iterator oldPath = exchange(dq->pathPos, dq->pathPos + matchLength);
+            it->handler(req, res, next);
+            dq->pathPos = oldPath;
+        } else if (matchLength == dq->preparedPath.cend() - dq->pathPos) {
+            it->handler(req, res, next);
+        } else {
+            next();
+        }
     } else {
         next();
     }

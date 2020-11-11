@@ -16,14 +16,14 @@ void __attribute__((constructor)) initForOpenFileLimited() {
 }
 
 CW_OBJECT_CONSTRUCTOR(CwApplication, CwRouter) {
+    CW_GET_DATA(CwApplication);
+    d->threads = max<int>(1, thread::hardware_concurrency());
 }
 
 int CwApplication::start(uint16_t port) noexcept {
     CW_GET_DATA(CwApplication);
 
-    auto const threads = max<int>(1, thread::hardware_concurrency());
-
-    asio::io_context ioc(threads);
+    asio::io_context ioc(d->threads);
 
     auto listener = make_unique<CwListener>(
         ioc,
@@ -35,10 +35,9 @@ int CwApplication::start(uint16_t port) noexcept {
     asio::signal_set signals(ioc, SIGINT, SIGTERM);
     signals.async_wait(bind(&asio::io_context::stop, &ioc));
 
-    cout << "port " << port << ", and " << threads << " thread" << (threads > 1 ? "s" : "") << endl;
     vector<thread> v;
-    v.reserve(threads - 1);
-    for (auto i = threads - 1; i > 0; --i)
+    v.reserve(d->threads - 1);
+    for (auto i = d->threads - 1; i > 0; --i)
         v.emplace_back(&asio::io_context::run, &ioc);
     ioc.run();
 
@@ -46,6 +45,11 @@ int CwApplication::start(uint16_t port) noexcept {
     for (auto& t : v) t.join();
 
     return EXIT_SUCCESS;
+}
+
+int CwApplication::threads() noexcept {
+    CW_GET_DATA(CwApplication);
+    return d->threads;
 }
 
 void CwApplication::demo(CwRequest* req, CwResponse* res, CwNextFunc next) {

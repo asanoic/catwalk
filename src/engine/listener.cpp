@@ -3,7 +3,7 @@
 #include "http-session.h"
 #include "utils.h"
 
-CwListener::CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, CwHandler handler) :
+CwListener::CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, CwFullHandler handler) :
     ioc_(ioc),
     acceptor_(asio::make_strand(ioc)),
     handler(handler) {

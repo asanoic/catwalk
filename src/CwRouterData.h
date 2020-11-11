@@ -5,6 +5,7 @@
 #include "CwObjectData.h"
 #include "CwRouter.h"
 
+class CwRequestData;
 struct CwRouteTuple {
     vector<string_view> tokenizedPath;
     CwHttpVerb method;
@@ -27,7 +28,7 @@ struct CwRouterData : CwObjectData {
     vector<CwRouteTuple> list;
 
     vector<string_view> tokenize(const string& path);
-    bool matched(const CwRouteTuple& tuple, CwConstSpan<string_view> path);
+    int matched(const CwRouteTuple& tuple, CwRequest* req);
     void handler(CwRequest* req, CwResponse* res, CwNextFunc next);
     void action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res);
 };

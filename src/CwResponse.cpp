@@ -2,6 +2,8 @@
 #include "CwResponseData.h"
 
 CW_OBJECT_CONSTRUCTOR(CwResponse, CwObject) {
+    CW_GET_DATA(CwResponse);
+    d->sent = false;
 }
 
 CwResponse* CwResponse::setBody(CwBody&& body) noexcept {

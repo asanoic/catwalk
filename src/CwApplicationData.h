@@ -7,6 +7,7 @@
 
 class CwApplication;
 struct CwApplicationData : CwRouterData {
+    int threads;
 };
 
 #endif // CWAPPLICATIONDATA_H

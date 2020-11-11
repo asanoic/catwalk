@@ -5,7 +5,7 @@
 #include "utils.h"
 #include "websocket-session.h"
 
-CwHttpSession::CwHttpSession(ip::tcp::socket&& socket, CwHandler handler) :
+CwHttpSession::CwHttpSession(ip::tcp::socket&& socket, CwFullHandler handler) :
     stream_(move(socket)),
     handler(handler) {
 }
@@ -13,13 +13,14 @@ CwHttpSession::CwHttpSession(ip::tcp::socket&& socket, CwHandler handler) :
 void CwHttpSession::read() {
     auto request = make_unique<CwRequest>();
     CW_GET_DATAEX(d, CwRequest, request);
-    d->beastRequestParser.body_limit(10000);
+    d->beastRequestParser.emplace();
+    d->beastRequestParser->body_limit(10000);
 
     // Set the timeout.
     stream_.expires_after(chrono::seconds(30));
 
     // Read a request using the parser-oriented interface
-    http::async_read(stream_, buffer_, d->beastRequestParser, beast::bind_front_handler(&CwHttpSession::onRead, shared_from_this(), move(request)));
+    http::async_read(stream_, buffer_, *d->beastRequestParser, beast::bind_front_handler(&CwHttpSession::onRead, shared_from_this(), move(request)));
 }
 
 void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, size_t bytes_transferred) {
@@ -31,17 +32,18 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
     if (ec) return fail(ec, "read");
 
     // See if it is a WebSocket Upgrade
-    if (ws::is_upgrade(dq->beastRequestParser.get())) {
+    if (ws::is_upgrade(dq->beastRequestParser->get())) {
         // Create a websocket session, transferring ownership
         // of both the socket and the HTTP request.
-        std::make_shared<CwWebSocketSession>(stream_.release_socket())->accept(dq->beastRequestParser.release());
+        std::make_shared<CwWebSocketSession>(stream_.release_socket())->accept(dq->beastRequestParser->release());
 
     } else {
+        dq->prepareData();
         auto response = make_unique<CwResponse>();
         CW_GET_DATAEX(dp, CwResponse, response);
-        handler(request.get(), response.get());
+        handler(request.get(), response.get(), CwNextFunc());
         dp->beastResponse.prepare_payload();
-        dp->beastResponse.keep_alive(dq->beastRequestParser.keep_alive());
+        dp->beastResponse.keep_alive(dq->beastRequestParser->keep_alive());
         if (dp->sent) {
             http::async_write(stream_, dp->beastResponse, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), move(response)));
         } else {

@@ -20,7 +20,7 @@ class CwObject {
 public:
     virtual ~CwObject();
 
-protected:
+public:
     CwObjectData* _data;
 };
 

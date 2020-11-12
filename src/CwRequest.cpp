@@ -58,3 +58,21 @@ void CwRequestData::prepareData() {
     preparedPath = ::tokenize(path.cbegin(), path.cend());
     pathPos = preparedPath.cbegin();
 }
+
+vector<string_view>::const_iterator CwRequestData::tokenMatchedUtil(const vector<string_view>& tokens) {
+    return mismatch(pathPos, preparedPath.cend(), tokens.cbegin(), tokens.cend(), [](string_view segment, string_view token) {
+        if (segment == token) return true;
+        return token.front() == ':';
+    }).second;
+}
+
+vector<string_view> CwRequestData::addMatchedParams(const vector<string_view>& tokens) {
+    vector<string_view> ret;
+    for (int i = 0, n = tokens.size(); i < n; ++i) {
+        if (tokens[i].front() == ':') {
+            ret.push_back(tokens[i]);
+            param.emplace(ret.back(), *(pathPos + i));
+        }
+    }
+    return move(ret);
+}

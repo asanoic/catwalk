@@ -45,16 +45,6 @@ vector<string_view> CwRouterData::tokenize(const string& path) {
     return ::tokenize(path.cbegin(), path.cend());
 }
 
-int CwRouterData::matched(const CwRouteTuple& tuple, CwRequest* req) {
-    CW_GET_DATAEX(dq, CwRequest, req);
-    cout << tuple.tokenizedPath.size() << ", " << dq->preparedPath.size() << endl;
-    auto index = mismatch(dq->pathPos, dq->preparedPath.cend(), tuple.tokenizedPath.cbegin(), tuple.tokenizedPath.cend(), [](string_view a, string_view b) {
-        if (a == b) return true;
-        return a.front() == ':';
-    });
-    return distance(index.first, dq->preparedPath.cend());
-}
-
 void CwRouterData::handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
     action(list.cbegin(), req, res);
     if (next) next();
@@ -66,17 +56,24 @@ void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* re
         this->action(std::next(it), req, res);
     };
     CW_GET_DATAEX(dq, CwRequest, req);
-    if (int matchLength = matched(*it, req); matchLength > 0) {
-        if (it->method == CwHttpVerb::none) {
-            vector<string_view>::const_iterator oldPath = exchange(dq->pathPos, dq->pathPos + matchLength);
-            it->handler(req, res, next);
-            dq->pathPos = oldPath;
-        } else if (matchLength == dq->preparedPath.cend() - dq->pathPos) {
-            it->handler(req, res, next);
-        } else {
-            next();
-        }
-    } else {
+    auto tuplePos = dq->tokenMatchedUtil(it->tokenizedPath);
+    if (tuplePos != it->tokenizedPath.cend()) {
         next();
+        return;
     }
+    if (it->method == CwHttpVerb::none) {
+        vector<string_view> params = dq->addMatchedParams(it->tokenizedPath);
+        vector<string_view>::const_iterator oldPathPos = exchange(dq->pathPos, dq->pathPos + it->tokenizedPath.size());
+        it->handler(req, res, next);
+        dq->pathPos = oldPathPos;
+        for(auto& p : params) dq->param.erase(p);
+        return;
+    }
+    if (it->method == req->method() && it->tokenizedPath.size() == dq->preparedPath.size()) {
+        vector<string_view> params = dq->addMatchedParams(it->tokenizedPath);
+        it->handler(req, res, next);
+        for(auto& p : params) dq->param.erase(p);
+        return;
+    }
+    next();
 }

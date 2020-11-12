@@ -4,8 +4,9 @@
 #include <optional>
 using namespace std;
 
-#include "CwObjectData.h"
 #include "CwCatwalk.h"
+#include "CwObjectData.h"
+#include "CwRouterData.h"
 #include "engine/boost-headers.h"
 
 class CwRequest;
@@ -20,7 +21,8 @@ struct CwRequestData : CwObjectData {
     void prepareData();
     vector<string_view> preparedPath;
     vector<string_view>::const_iterator pathPos;
+    vector<string_view>::const_iterator tokenMatchedUtil(const vector<string_view>& tokens);
+    vector<string_view> addMatchedParams(const vector<string_view>& tokens);
 };
 
 #endif // CWREQUESTDATA_H
-

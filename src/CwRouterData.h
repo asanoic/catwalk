@@ -28,7 +28,6 @@ struct CwRouterData : CwObjectData {
     vector<CwRouteTuple> list;
 
     vector<string_view> tokenize(const string& path);
-    int matched(const CwRouteTuple& tuple, CwRequest* req);
     void handler(CwRequest* req, CwResponse* res, CwNextFunc next);
     void action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res);
 };

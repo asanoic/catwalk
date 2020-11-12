@@ -53,6 +53,7 @@ int CwApplication::threads() noexcept {
 }
 
 void CwApplication::demo(CwRequest* req, CwResponse* res, CwNextFunc next) {
+    cout << req->path() << endl;
     if (req->method() != CwHttpVerb::get && req->method() != CwHttpVerb::get) {
         res->setStatus((int)http::status::bad_request)
             ->setHeader("Content-Type", "text/html")

@@ -19,6 +19,8 @@ struct CwRequestData : CwObjectData {
     unordered_map<string_view, string_view> query;
 
     void prepareData();
+    string_view target;
+    string_view path;
     vector<string_view> preparedPath;
     vector<string_view>::const_iterator pathPos;
     vector<string_view>::const_iterator tokenMatchedUtil(const vector<string_view>& tokens);

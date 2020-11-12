@@ -40,7 +40,7 @@ const vector<string_view>& CwRequest::headers() const noexcept {
 
 const string_view CwRequest::path() const noexcept {
     CW_GET_DATA(CwRequest);
-    return d->beastRequestParser->get().target();
+    return d->path;
 }
 
 const CwHttpVerb CwRequest::method() const noexcept {
@@ -54,16 +54,27 @@ vector<any>& CwRequest::data() const noexcept {
 }
 
 void CwRequestData::prepareData() {
-    string_view path = beastRequestParser->get().target();
+    target = beastRequestParser->get().target();
+    string_view::iterator delimiter = find(target.begin(), target.end(), '?');
+    path = string_view(target.begin(), distance(target.begin(), delimiter));
     preparedPath = ::tokenize(path.cbegin(), path.cend());
     pathPos = preparedPath.cbegin();
+
+//    if (delimiter == target.end()) return;
+//    string_view::iterator left = ++delimiter;
+//    while (delimiter != target.end() && *delimiter != '=') ++delimiter;
+//    string_view key(left, distance(left, delimiter));
+//    left = ++delimiter;
+//    while (delimiter != target.end() && *delimiter != '&' && *delimiter != ';') ++delimiter;
+//    string_view value(left, distance(left, delimiter));
 }
 
 vector<string_view>::const_iterator CwRequestData::tokenMatchedUtil(const vector<string_view>& tokens) {
     return mismatch(pathPos, preparedPath.cend(), tokens.cbegin(), tokens.cend(), [](string_view segment, string_view token) {
-        if (segment == token) return true;
-        return token.front() == ':';
-    }).second;
+               if (segment == token) return true;
+               return token.front() == ':';
+           })
+        .second;
 }
 
 vector<string_view> CwRequestData::addMatchedParams(const vector<string_view>& tokens) {

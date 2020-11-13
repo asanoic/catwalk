@@ -15,9 +15,8 @@ void CwHttpSession::read() {
     CW_GET_DATAEX(d, CwRequest, request);
     d->beastRequestParser.emplace();
     d->beastRequestParser->body_limit(10000);
-
     // Set the timeout.
-    stream_.expires_after(chrono::seconds(30));
+    stream_.expires_after(chrono::seconds(10));
 
     // Read a request using the parser-oriented interface
     http::async_read(stream_, buffer_, *d->beastRequestParser, beast::bind_front_handler(&CwHttpSession::onRead, shared_from_this(), move(request)));
@@ -29,6 +28,7 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
 
     // This means they closed the connection
     if (ec == http::error::end_of_stream) return close();
+    if (ec == beast::error::timeout && dq->beastRequestParser->get().target().empty()) return;
     if (ec) return fail(ec, "read", (char*)__FILE__, __LINE__);
 
     // See if it is a WebSocket Upgrade
@@ -60,7 +60,7 @@ void CwHttpSession::onWrite(unique_ptr<CwResponse> response, beast::error_code e
     CW_GET_DATAEX(d, CwResponse, response);
     if (ec) fail(ec, "write", (char*)__FILE__, __LINE__);
     if (d->beastResponse.need_eof()) return close();
-    // read();
+    read();
 }
 
 void CwHttpSession::close() {

@@ -42,8 +42,6 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
         auto response = make_unique<CwResponse>();
         CW_GET_DATAEX(dp, CwResponse, response);
         handler(request.get(), response.get(), CwNextFunc());
-        dp->beastResponse.prepare_payload();
-        dp->beastResponse.keep_alive(dq->beastRequestParser->keep_alive());
         if (!dp->sent) {
             cout << "missing call CwResponse::send()?" << endl;
             response->setStatus((int)http::status::not_found)
@@ -51,6 +49,8 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
                 ->setBody(fromString("404"))
                 ->send();
         }
+        dp->beastResponse.prepare_payload();
+        dp->beastResponse.keep_alive(dq->beastRequestParser->keep_alive());
         http::async_write(stream_, dp->beastResponse, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), move(response)));
     }
 }
@@ -60,7 +60,7 @@ void CwHttpSession::onWrite(unique_ptr<CwResponse> response, beast::error_code e
     CW_GET_DATAEX(d, CwResponse, response);
     if (ec) fail(ec, "write", (char*)__FILE__, __LINE__);
     if (d->beastResponse.need_eof()) return close();
-    read();
+    // read();
 }
 
 void CwHttpSession::close() {

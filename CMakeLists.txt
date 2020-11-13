@@ -62,5 +62,9 @@ endif()
 add_executable(demo "${pwd}/demo/main.cpp")
 target_link_libraries(demo PRIVATE ${PROJECT_NAME})
 
+add_custom_target(other-files SOURCES
+    "${pwd}/README.md"
+)
+
 
 

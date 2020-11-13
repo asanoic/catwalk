@@ -24,6 +24,12 @@ CwRouter* CwRouter::use(const string& path, CwRouter* router) noexcept {
     return this;
 }
 
+CwRouter* CwRouter::use(CwFullHandler handler) noexcept {
+    CW_GET_DATA(CwRouter);
+    d->list.emplace_back(d->tokenize(""), CwHttpVerb::none, handler);
+    return this;
+}
+
 CwRouter* CwRouter::use(CwRouter* router) noexcept {
     CW_GET_DATA(CwRouter);
     CW_GET_DATAEX(rd, CwRouter, router);
@@ -66,13 +72,13 @@ void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* re
         vector<string_view>::const_iterator oldPathPos = exchange(dq->pathPos, dq->pathPos + it->tokenizedPath.size());
         it->handler(req, res, next);
         dq->pathPos = oldPathPos;
-        for(auto& p : params) dq->param.erase(p);
+        for (auto& p : params) dq->param.erase(p);
         return;
     }
     if (it->method == req->method() && it->tokenizedPath.size() == dq->preparedPath.size()) {
         vector<string_view> params = dq->addMatchedParams(it->tokenizedPath);
         it->handler(req, res, next);
-        for(auto& p : params) dq->param.erase(p);
+        for (auto& p : params) dq->param.erase(p);
         return;
     }
     next();

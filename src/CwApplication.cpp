@@ -53,7 +53,6 @@ int CwApplication::threads() noexcept {
 }
 
 void CwApplication::demo(CwRequest* req, CwResponse* res, CwNextFunc next) {
-    cout << req->path() << endl;
     if (req->method() != CwHttpVerb::get && req->method() != CwHttpVerb::get) {
         res->setStatus((int)http::status::bad_request)
             ->setHeader("Content-Type", "text/html")
@@ -77,6 +76,7 @@ void CwApplication::demo(CwRequest* req, CwResponse* res, CwNextFunc next) {
     beast::error_code ec;
     beast::file_stdio fs;
     fs.open(path.c_str(), beast::file_mode::scan, ec);
+    if (ec) return;
     vector<uint8_t> data(fs.size(ec));
     fs.read(data.data(), data.size(), ec);
 

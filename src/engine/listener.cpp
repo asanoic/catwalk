@@ -12,28 +12,28 @@ CwListener::CwListener(asio::io_context& ioc, ip::tcp::endpoint endpoint, CwFull
     // Open the acceptor
     acceptor_.open(endpoint.protocol(), ec);
     if (ec) {
-        fail(ec, "open");
+        fail(ec, "open", (char*)__FILE__, __LINE__);
         return;
     }
 
     // Allow address reuse
     acceptor_.set_option(asio::socket_base::reuse_address(true), ec);
     if (ec) {
-        fail(ec, "set_option");
+        fail(ec, "set_option", (char*)__FILE__, __LINE__);
         return;
     }
 
     // Bind to the server address
     acceptor_.bind(endpoint, ec);
     if (ec) {
-        fail(ec, "bind");
+        fail(ec, "bind", (char*)__FILE__, __LINE__);
         return;
     }
 
     // Start listening for connections
     acceptor_.listen(asio::socket_base::max_listen_connections, ec);
     if (ec) {
-        fail(ec, "listen");
+        fail(ec, "listen", (char*)__FILE__, __LINE__);
         return;
     }
 }
@@ -53,7 +53,7 @@ void CwListener::accept() {
 
 void CwListener::onAccept(beast::error_code ec, ip::tcp::socket socket) {
     if (ec) {
-        fail(ec, "accept");
+        fail(ec, "accept", (char*)__FILE__, __LINE__);
     } else {
         // Create the http session and run it
         make_shared<CwHttpSession>(move(socket), handler)->read();

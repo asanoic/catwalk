@@ -29,7 +29,7 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
 
     // This means they closed the connection
     if (ec == http::error::end_of_stream) return close();
-    if (ec) return fail(ec, "read");
+    if (ec) return fail(ec, "read", (char*)__FILE__, __LINE__);
 
     // See if it is a WebSocket Upgrade
     if (ws::is_upgrade(dq->beastRequestParser->get())) {
@@ -44,19 +44,21 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
         handler(request.get(), response.get(), CwNextFunc());
         dp->beastResponse.prepare_payload();
         dp->beastResponse.keep_alive(dq->beastRequestParser->keep_alive());
-        if (dp->sent) {
-            http::async_write(stream_, dp->beastResponse, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), move(response)));
-        } else {
+        if (!dp->sent) {
             cout << "missing call CwResponse::send()?" << endl;
-            return close();
+            response->setStatus((int)http::status::not_found)
+                ->setHeader("Content-Type", "text/html")
+                ->setBody(fromString("404"))
+                ->send();
         }
+        http::async_write(stream_, dp->beastResponse, beast::bind_front_handler(&CwHttpSession::onWrite, shared_from_this(), move(response)));
     }
 }
 
 void CwHttpSession::onWrite(unique_ptr<CwResponse> response, beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
     CW_GET_DATAEX(d, CwResponse, response);
-    if (ec) fail(ec, "write");
+    if (ec) fail(ec, "write", (char*)__FILE__, __LINE__);
     if (d->beastResponse.need_eof()) return close();
     read();
 }

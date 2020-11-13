@@ -20,7 +20,7 @@ void CwWebSocketSession::accept(bx_request req) {
 }
 
 void CwWebSocketSession::onAccept(beast::error_code ec) {
-    if (ec) return fail(ec, "accept");
+    if (ec) return fail(ec, "accept", (char*)__FILE__, __LINE__);
 
     // Read a message
     read();
@@ -36,7 +36,7 @@ void CwWebSocketSession::onRead(beast::error_code ec, std::size_t bytes_transfer
 
     // This indicates that the websocket_session was closed
     if (ec == ws::error::closed) return;
-    if (ec) fail(ec, "read");
+    if (ec) fail(ec, "read", (char*)__FILE__, __LINE__);
 
     // Echo the message
     ws_.text(ws_.got_text());
@@ -46,7 +46,7 @@ void CwWebSocketSession::onRead(beast::error_code ec, std::size_t bytes_transfer
 void CwWebSocketSession::onWrite(beast::error_code ec, std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
 
-    if (ec) return fail(ec, "write");
+    if (ec) return fail(ec, "write", (char*)__FILE__, __LINE__);
 
     // Clear the buffer
     buffer_.consume(buffer_.size());

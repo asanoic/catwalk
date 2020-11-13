@@ -19,8 +19,13 @@ const string_view CwRequest::param(string_view name) const noexcept {
     return "";
 }
 
-const string_view CwRequest::query(string_view name) const noexcept {
-    return "";
+optional<reference_wrapper<const vector<string_view>>> CwRequest::query(string_view name) const noexcept {
+    CW_GET_DATA(CwRequest);
+    optional<reference_wrapper<vector<string_view>>> ret;
+    if (auto p = d->query.find(name); p != d->query.end()) {
+        ret = ref(p->second);
+    }
+    return ret;
 }
 
 const string_view CwRequest::get(string_view header) const noexcept {
@@ -60,13 +65,21 @@ void CwRequestData::prepareData() {
     preparedPath = ::tokenize(path.cbegin(), path.cend());
     pathPos = preparedPath.cbegin();
 
-//    if (delimiter == target.end()) return;
-//    string_view::iterator left = ++delimiter;
-//    while (delimiter != target.end() && *delimiter != '=') ++delimiter;
-//    string_view key(left, distance(left, delimiter));
-//    left = ++delimiter;
-//    while (delimiter != target.end() && *delimiter != '&' && *delimiter != ';') ++delimiter;
-//    string_view value(left, distance(left, delimiter));
+    static string split = "=&;";
+
+    while (delimiter != target.end()) {
+        string_view::iterator left = ++delimiter;
+        delimiter = find_first_of(left, target.end(), split.begin(), split.end());
+        string_view key(left, distance(left, delimiter));
+        if (*delimiter != '=') {
+            query[key]; // if not have key, insert key with empty vector of values; if has key, nothing happen;
+            continue;
+        }
+        left = ++delimiter;
+        delimiter = find_first_of(left, target.end(), split.begin() + 1, split.end());
+        string_view value(left, distance(left, delimiter));
+        query[key].push_back(value);
+    }
 }
 
 vector<string_view>::const_iterator CwRequestData::tokenMatchedUtil(const vector<string_view>& tokens) {

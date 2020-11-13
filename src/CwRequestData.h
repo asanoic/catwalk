@@ -16,7 +16,7 @@ struct CwRequestData : CwObjectData {
     pair<vector<string_view>, bool> headersResult;
     vector<any> extraData;
     unordered_map<string_view, string_view> param;
-    unordered_map<string_view, string_view> query;
+    unordered_map<string_view, vector<string_view>> query;
 
     void prepareData();
     string_view target;

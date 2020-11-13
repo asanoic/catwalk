@@ -3,8 +3,9 @@
 #include <iostream>
 #include <unordered_map>
 
-void fail(beast::error_code ec, char const* what) {
+void fail(beast::error_code ec, char const* what, char* file, int line) {
     cerr << what << ": " << ec.message() << "\n";
+    cerr << "line: " << line << " at " << file << "\n";
 }
 
 // Return a reasonable mime type based on the extension of a file.

@@ -1,8 +1,8 @@
-# catwalk
+# Catwalk
 
-catwalk is a high-performance and easy-to-use C++ http web framework
+Catwalk is a high-performance and easy-to-use C++ http web framework
 
-Inspired by Sinatra and Express.js, now simple web framework are now in C++ with high-performance.
+Inspired by Sinatra and Express.js, simple web framework are now in C++ with high-performance.
 
 the simple hello world server likes
 
@@ -61,5 +61,4 @@ cmake --build b -j8
 ```
 you might need change a little bit for you local boost install folder.
 
-### Have func with super-duper high-performance C++ web server:
-### Catwalk
+### Have func with super-duper high-performance C++ web server: Catwalk

@@ -61,4 +61,4 @@ cmake --build b -j8
 ```
 you might need change a little bit for you local boost install folder.
 
-### Have func with super-duper high-performance C++ web server: Catwalk
+### Have fun with super-duper high-performance C++ web framework: Catwalk

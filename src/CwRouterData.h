@@ -1,6 +1,9 @@
 #ifndef CWROUTERDATA_H
 #define CWROUTERDATA_H
 
+#include <unordered_set>
+using namespace std;
+
 #include "CwCatwalk.h"
 #include "CwObjectData.h"
 #include "CwRouter.h"
@@ -26,7 +29,9 @@ struct CwRouteTuple {
 
 struct CwRouterData : CwObjectData {
     vector<CwRouteTuple> list;
+    unordered_set<CwRouter*> sub;
 
+    ~CwRouterData();
     vector<string_view> tokenize(const string& path);
     void handler(CwRequest* req, CwResponse* res, CwNextFunc next);
     void action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res);

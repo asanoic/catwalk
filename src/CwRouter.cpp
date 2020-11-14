@@ -21,6 +21,7 @@ CwRouter* CwRouter::use(const string& path, CwRouter* router) noexcept {
     CW_GET_DATA(CwRouter);
     CW_GET_DATAEX(rd, CwRouter, router);
     d->list.emplace_back(d->tokenize(path), CwHttpVerb::none, bind(&CwRouterData::handler, rd, placeholders::_1, placeholders::_2, placeholders::_3));
+    d->sub.insert(router);
     return this;
 }
 
@@ -34,6 +35,7 @@ CwRouter* CwRouter::use(CwRouter* router) noexcept {
     CW_GET_DATA(CwRouter);
     CW_GET_DATAEX(rd, CwRouter, router);
     d->list.emplace_back(d->tokenize(""), CwHttpVerb::none, bind(&CwRouterData::handler, rd, placeholders::_1, placeholders::_2, placeholders::_3));
+    d->sub.insert(router);
     return this;
 }
 
@@ -45,6 +47,10 @@ CwRouter* CwRouter::set(CwHttpVerb method, const string& path, CwHandler handler
     CW_GET_DATA(CwRouter);
     d->list.emplace_back(d->tokenize(path), method, bind(handler, placeholders::_1, placeholders::_2));
     return this;
+}
+
+CwRouterData::~CwRouterData() {
+    for (CwRouter* r : sub) delete r;
 }
 
 vector<string_view> CwRouterData::tokenize(const string& path) {
@@ -75,7 +81,7 @@ void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* re
         for (auto& p : params) dq->param.erase(p);
         return;
     }
-    if (it->method == req->method() && it->tokenizedPath.size() == dq->preparedPath.size()) {
+    if (it->method == req->method() && it->tokenizedPath.size() == distance(dq->pathPos, dq->preparedPath.cend())) {
         vector<string_view> params = dq->addMatchedParams(it->tokenizedPath);
         it->handler(req, res, next);
         for (auto& p : params) dq->param.erase(p);

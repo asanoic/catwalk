@@ -21,9 +21,9 @@ const string_view CwRequest::param(string_view name) const noexcept {
 
 optional<reference_wrapper<const vector<string_view>>> CwRequest::query(string_view name) const noexcept {
     CW_GET_DATA(CwRequest);
-    optional<reference_wrapper<vector<string_view>>> ret;
+    optional<reference_wrapper<const vector<string_view>>> ret;
     if (auto p = d->query.find(name); p != d->query.end()) {
-        ret = ref(p->second);
+        ret = cref(p->second);
     }
     return ret;
 }

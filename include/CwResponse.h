@@ -15,7 +15,8 @@ public:
     CwResponse* setHeader(string header, string content) noexcept;
     CwResponse* setStatus(int code) noexcept;
     void send() noexcept;
-    vector<any>& data() const noexcept;
+    CwResponse* putExtra(string_view key, any value) noexcept;
+    const any& getExtra(string_view key) const noexcept;
 };
 
 #endif // CWRESPONSE_H

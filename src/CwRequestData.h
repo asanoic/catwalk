@@ -14,7 +14,7 @@ struct CwRequestData : CwObjectData {
     optional<bx_request_parser> beastRequestParser;
     pair<CwBody, bool> bodyResult;
     pair<vector<string_view>, bool> headersResult;
-    vector<any> extraData;
+    unordered_map<string_view, any> extraData;
     unordered_map<string_view, string_view> param;
     unordered_map<string_view, vector<string_view>> query;
 

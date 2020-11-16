@@ -3,12 +3,14 @@
 
 #include <boost/asio.hpp>
 #include <boost/beast.hpp>
+#include <boost/json.hpp>
 
 namespace asio = boost::asio;
 namespace beast = boost::beast;
 namespace http = beast::http;
 namespace ws = beast::websocket;
 namespace ip = asio::ip;
+namespace json = boost::json;
 
 using bx_request = http::request<http::vector_body<uint8_t>>;
 using bx_response = http::response<http::vector_body<uint8_t>>;

@@ -29,7 +29,6 @@ struct CwRouteTuple {
 
 struct CwRouterData : CwObjectData {
     vector<CwRouteTuple> list;
-    unordered_set<CwRouter*> sub;
 
     ~CwRouterData();
     vector<string_view> tokenize(const string& path);

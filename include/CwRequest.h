@@ -2,10 +2,10 @@
 #define CWREQUEST_H
 
 #include <any>
-#include <string>
-#include <vector>
-#include <string_view>
 #include <optional>
+#include <string>
+#include <string_view>
+#include <vector>
 
 using namespace std;
 
@@ -23,7 +23,8 @@ public:
     const vector<string_view>& headers() const noexcept;
     const string_view path() const noexcept;
     const CwHttpVerb method() const noexcept;
-    vector<any>& data() const noexcept;
+    CwRequest* putExtra(string_view key, any value) noexcept;
+    const any& getExtra(string_view key) const noexcept;
 };
 
 #endif // CWREQUEST_H

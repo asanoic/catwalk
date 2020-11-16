@@ -53,9 +53,20 @@ const CwHttpVerb CwRequest::method() const noexcept {
     return static_cast<CwHttpVerb>(d->beastRequestParser->get().method());
 }
 
-vector<any>& CwRequest::data() const noexcept {
+CwRequest* CwRequest::putExtra(string_view key, any value) noexcept {
     CW_GET_DATA(CwRequest);
-    return d->extraData;
+    if (value.has_value())
+        d->extraData[key] = value;
+    else
+        d->extraData.erase(key);
+    return this;
+}
+
+const any& CwRequest::getExtra(string_view key) const noexcept {
+    CW_GET_DATA(CwRequest);
+    static any defaultValue;
+    if (auto p = d->extraData.find(key); p != d->extraData.end()) return p->second;
+    return defaultValue;
 }
 
 void CwRequestData::prepareData() {

@@ -29,7 +29,18 @@ void CwResponse::send() noexcept {
     d->sent = true;
 }
 
-vector<any>& CwResponse::data() const noexcept {
+CwResponse* CwResponse::putExtra(string_view key, any value) noexcept {
     CW_GET_DATA(CwResponse);
-    return d->extraData;
+    if (value.has_value())
+        d->extraData[key] = value;
+    else
+        d->extraData.erase(key);
+    return this;
+}
+
+const any& CwResponse::getExtra(string_view key) const noexcept {
+    CW_GET_DATA(CwResponse);
+    static any defaultValue;
+    if (auto p = d->extraData.find(key); p != d->extraData.end()) return p->second;
+    return defaultValue;
 }

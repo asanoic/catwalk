@@ -7,6 +7,7 @@ using namespace std;
 int main() {
     uint16_t port = 8080;
     auto app = make_unique<CwApplication>();
+    CwRouter* r1 = nullptr;
     app
         ->use([](CwRequest* req, CwResponse* res, CwNextFunc next) {
             cout << "route 1 before" << endl;
@@ -14,7 +15,7 @@ int main() {
             cout << "route 1 after" << endl;
         })
         ->use("/api",
-              (new CwRouter())
+              (r1 = new CwRouter())
                   ->use([](CwRequest* req, CwResponse* res, CwNextFunc next) {
                       cout << "route 3 before" << endl;
                       next();
@@ -45,4 +46,5 @@ int main() {
         });
     cout << "port " << port << ", and " << app->threads() << " thread" << (app->threads() > 1 ? "s" : "") << endl;
     app->start(port);
+    delete r1;
 }

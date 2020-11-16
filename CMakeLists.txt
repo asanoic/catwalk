@@ -5,15 +5,15 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 if (NOT Boost_ROOT)
     if (MINGW)
-        set(Boost_ROOT "q:/msys2/lib/boost-1.74.0/stage/lib/cmake/Boost-1.74.0")
+        set(Boost_ROOT "q:/msys2/lib/boost-1.75.0/stage/lib/cmake/Boost-1.75.0")
     else()
-        set(Boost_ROOT "/opt/boost/stage/lib/cmake/Boost-1.74.0")
+        set(Boost_ROOT "/opt/boost/stage/lib/cmake/Boost-1.75.0")
     endif()
 endif()
 
 set (pwd ${CMAKE_CURRENT_LIST_DIR})
 
-find_package(Boost 1.73 REQUIRED COMPONENTS system)
+find_package(Boost 1.75 REQUIRED COMPONENTS system)
 
 list(APPEND beast-src
     "${pwd}/include/CwCatwalk.h"

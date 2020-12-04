@@ -10,8 +10,6 @@ class CwApplication : public CwRouter {
 public:
     int start(uint16_t port) noexcept;
     int threads() noexcept;
-
-    void demo(CwRequest* req, CwResponse* res, CwNextFunc next);
 };
 
 #endif // CWAPPLICATION_H

@@ -3,12 +3,14 @@
 using namespace std;
 
 #include "CwApplication.h"
+#include "CwStaticMiddleware.h"
 
 int main() {
     uint16_t port = 8080;
     auto app = make_unique<CwApplication>();
     CwRouter* r1 = nullptr;
     app
+        ->use(CwStaticMiddleware::instance("."))
         ->use([](CwRequest* req, CwResponse* res, CwNextFunc next) {
             cout << "route 1 before" << endl;
             next();

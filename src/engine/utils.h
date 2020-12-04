@@ -12,8 +12,6 @@ using namespace std;
 const string kServerName = "Catwalk";
 
 void fail(beast::error_code ec, char const* what, char* file, int line);
-string_view mimeType(string_view path);
-string pathJoin(string_view base, string_view path);
 vector<uint8_t> fromString(string s);
 
 template <typename Itr>

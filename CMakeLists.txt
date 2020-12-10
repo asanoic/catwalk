@@ -13,28 +13,21 @@ endif()
 
 set (pwd ${CMAKE_CURRENT_LIST_DIR})
 
+function(add_files catwalk-src)
+    set(local-list ${catwalk-src})
+    foreach(file IN LISTS ARGN)
+        list(APPEND local-list
+            "${pwd}/include/${file}.h"
+            "${pwd}/src/${file}Data.h"
+            "${pwd}/src/${file}.cpp"
+        )
+    endforeach()
+    set(catwalk-src ${local-list} PARENT_SCOPE)
+endfunction()
+
 find_package(Boost 1.75 REQUIRED COMPONENTS system)
 
 list(APPEND beast-src
-    "${pwd}/include/CwCatwalk.h"
-    "${pwd}/include/CwObject.h"
-    "${pwd}/src/CwObjectData.h"
-    "${pwd}/src/CwObject.cpp"
-    "${pwd}/include/CwRequest.h"
-    "${pwd}/src/CwRequestData.h"
-    "${pwd}/src/CwRequest.cpp"
-    "${pwd}/include/CwResponse.h"
-    "${pwd}/src/CwResponseData.h"
-    "${pwd}/src/CwResponse.cpp"
-    "${pwd}/include/CwRouter.h"
-    "${pwd}/src/CwRouterData.h"
-    "${pwd}/src/CwRouter.cpp"
-    "${pwd}/include/CwApplication.h"
-    "${pwd}/src/CwApplicationData.h"
-    "${pwd}/src/CwApplication.cpp"
-    "${pwd}/include/CwStaticMiddleware.h"
-    "${pwd}/src/CwStaticMiddlewareData.h"
-    "${pwd}/src/CwStaticMiddleware.cpp"
     "${pwd}/src/engine/boost-headers.h"
     "${pwd}/src/engine/listener.h"
     "${pwd}/src/engine/listener.cpp"
@@ -46,7 +39,17 @@ list(APPEND beast-src
     "${pwd}/src/engine/websocket-session.cpp"
 )
 
-add_library(${PROJECT_NAME} SHARED ${beast-src})
+list(APPEND catwalk-src "${pwd}/include/CwCatwalk.h")
+add_files(${catwalk-src}
+    "CwObject"
+    "CwRequest"
+    "CwResponse"
+    "CwRouter"
+    "CwApplication"
+    "CwStaticMiddleware"
+)
+
+add_library(${PROJECT_NAME} SHARED ${beast-src} ${catwalk-src})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC BOOST_ASIO_NO_DEPRECATED BOOST_BEAST_USE_STD_STRING_VIEW)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)
@@ -68,6 +71,3 @@ target_link_libraries(demo PRIVATE ${PROJECT_NAME})
 add_custom_target(other-files SOURCES
     "${pwd}/README.md"
 )
-
-
-

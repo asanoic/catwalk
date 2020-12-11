@@ -13,8 +13,8 @@ endif()
 
 set (pwd ${CMAKE_CURRENT_LIST_DIR})
 
-function(add_files catwalk-src)
-    set(local-list ${catwalk-src})
+function(add_files files)
+    set(local-list ${${files}})
     foreach(file IN LISTS ARGN)
         list(APPEND local-list
             "${pwd}/include/${file}.h"
@@ -22,7 +22,7 @@ function(add_files catwalk-src)
             "${pwd}/src/${file}.cpp"
         )
     endforeach()
-    set(catwalk-src ${local-list} PARENT_SCOPE)
+    set(${files} ${local-list} PARENT_SCOPE)
 endfunction()
 
 find_package(Boost 1.75 REQUIRED COMPONENTS system)
@@ -40,7 +40,7 @@ list(APPEND beast-src
 )
 
 list(APPEND catwalk-src "${pwd}/include/CwCatwalk.h")
-add_files(${catwalk-src}
+add_files(catwalk-src
     "CwObject"
     "CwRequest"
     "CwResponse"

@@ -61,6 +61,11 @@ cmake --build b -j8
 ```
 you might need change a little bit for you local boost install folder.
 
+boost 1.75 is required for new JSON support.
+
+Catwalk can be built using GCC (Linux/Windows(MinGW-w64)), you might need change a little of other compilers
+
+
 ## Not a benchmark
 My PC is pretty old, it is [Mac-mini late 2012 I5](https://support.apple.com/kb/sp659?locale=en_US), when I use Catwalk, the [Apache Bench](https://httpd.apache.org/docs/2.4/programs/ab.html)
 ```

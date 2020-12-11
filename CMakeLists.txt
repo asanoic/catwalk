@@ -27,7 +27,7 @@ endfunction()
 
 find_package(Boost 1.75 REQUIRED COMPONENTS system)
 
-list(APPEND beast-src
+list(APPEND engine-src
     "${pwd}/src/engine/boost-headers.h"
     "${pwd}/src/engine/listener.h"
     "${pwd}/src/engine/listener.cpp"
@@ -49,7 +49,7 @@ add_files(catwalk-src
     "CwStaticMiddleware"
 )
 
-add_library(${PROJECT_NAME} SHARED ${beast-src} ${catwalk-src})
+add_library(${PROJECT_NAME} SHARED ${engine-src} ${catwalk-src})
 
 target_compile_definitions(${PROJECT_NAME} PUBLIC BOOST_ASIO_NO_DEPRECATED BOOST_BEAST_USE_STD_STRING_VIEW)
 target_compile_features(${PROJECT_NAME} PUBLIC cxx_std_17)

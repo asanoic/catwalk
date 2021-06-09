@@ -1,6 +1,9 @@
 #ifndef CWRESPONSEDATA_H
 #define CWRESPONSEDATA_H
 
+#include <unordered_map>
+using namespace std;
+
 #include "CwObjectData.h"
 #include "engine/boost-headers.h"
 

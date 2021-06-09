@@ -2,6 +2,7 @@
 #define CWREQUESTDATA_H
 
 #include <optional>
+#include <unordered_map>
 using namespace std;
 
 #include "CwCatwalk.h"

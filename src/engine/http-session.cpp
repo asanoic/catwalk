@@ -12,7 +12,7 @@ CwHttpSession::CwHttpSession(ip::tcp::socket&& socket, CwFullHandler handler) :
 
 void CwHttpSession::read() {
     auto request = make_unique<CwRequest>();
-    CW_GET_DATAEX(d, CwRequest, request);
+    CW_GET_DATAEX(d, CwRequest, request.get());
     d->beastRequestParser.emplace();
     d->beastRequestParser->body_limit(10000);
     // Set the timeout.
@@ -24,7 +24,7 @@ void CwHttpSession::read() {
 
 void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
-    CW_GET_DATAEX(dq, CwRequest, request);
+    CW_GET_DATAEX(dq, CwRequest, request.get());
 
     // This means they closed the connection
     if (ec == http::error::end_of_stream) return close();
@@ -40,7 +40,7 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
     } else {
         dq->prepareData();
         auto response = make_unique<CwResponse>();
-        CW_GET_DATAEX(dp, CwResponse, response);
+        CW_GET_DATAEX(dp, CwResponse, response.get());
         handler(request.get(), response.get(), CwNextFunc());
         if (!dp->sent) {
             cout << "missing call CwResponse::send()?" << endl;
@@ -57,7 +57,7 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
 
 void CwHttpSession::onWrite(unique_ptr<CwResponse> response, beast::error_code ec, size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
-    CW_GET_DATAEX(d, CwResponse, response);
+    CW_GET_DATAEX(d, CwResponse, response.get());
     if (ec) fail(ec, "write", (char*)__FILE__, __LINE__);
     if (d->beastResponse.need_eof()) return close();
     read();

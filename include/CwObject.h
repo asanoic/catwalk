@@ -2,6 +2,8 @@
 #define CWOBJECT_H
 
 #define CW_OBJECT(CLASSNAME)                         \
+    friend class CLASSNAME##Data;                    \
+                                                     \
 protected:                                           \
     explicit CLASSNAME(CwObjectData* data);          \
                                                      \
@@ -20,7 +22,7 @@ class CwObject {
 public:
     virtual ~CwObject();
 
-public:
+private:
     CwObjectData* _data;
 };
 

@@ -5,9 +5,9 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 if (NOT Boost_ROOT)
     if (MINGW)
-        set(Boost_ROOT "q:/msys2/lib/boost-1.75.0/stage/lib/cmake/Boost-1.75.0")
+        set(Boost_ROOT "q:/msys2/lib/boost-1.76.0/stage/lib/cmake/Boost-1.76.0")
     else()
-        set(Boost_ROOT "/opt/boost/stage/lib/cmake/Boost-1.75.0")
+        set(Boost_ROOT "/opt/boost/stage/lib/cmake/Boost-1.76.0")
     endif()
 endif()
 

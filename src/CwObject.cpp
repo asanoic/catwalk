@@ -16,6 +16,6 @@ CwObject::~CwObject() {
     delete d;
 }
 
-CwObjectData* CwObjectData::helper(const CwObject* obj) {
+CwObjectData* CwObjectData::getData(const CwObject* obj) {
     return obj->_data;
 }

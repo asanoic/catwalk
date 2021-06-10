@@ -23,6 +23,15 @@ int main() {
                       next();
                       cout << "route 3 after" << endl;
                   })
+                  ->set(CwHttpVerb::post, "/abc", [](CwRequest* req, CwResponse* res) {
+                      static string html = R"({"hello" : "world" })";
+                      res
+                          ->setStatus(200)
+                          ->setHeader("Content-Type", "application/json")
+                          ->setBody(CwBody(html.begin(), html.end()))
+                          ->send();
+                      cout << "api response here" << endl;
+                  })
                   ->set(CwHttpVerb::get, "/abc", [](CwRequest* req, CwResponse* res) {
                       static string html = R"({"hello" : "world" })";
                       res
@@ -31,6 +40,11 @@ int main() {
                           ->setBody(CwBody(html.begin(), html.end()))
                           ->send();
                       cout << "api response here" << endl;
+                  })
+                  ->use([](CwRequest* req, CwResponse* res, CwNextFunc next) {
+                      cout << "route 4 before" << endl;
+                      next();
+                      cout << "route 4 after" << endl;
                   }))
         ->use([](CwRequest* req, CwResponse* res, CwNextFunc next) {
             cout << "route 2 before" << endl;

@@ -70,22 +70,25 @@ void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* re
     CW_GET_DATAEX(dReq, CwRequest, req);
     auto tuplePos = dReq->tokenMatchedUtil(it->tokenizedPath);
     if (tuplePos != it->tokenizedPath.cend()) {
+        // not match route, move to next;
         next();
-        return;
-    }
-    if (it->method == CwHttpVerb::none) {
+
+    } else if (it->method == CwHttpVerb::none) {
+        // route matched, it is middleware, because handler added by method use
         vector<string_view> params = dReq->addMatchedParams(it->tokenizedPath);
         vector<string_view>::const_iterator oldPathPos = exchange(dReq->pathPos, dReq->pathPos + it->tokenizedPath.size());
         it->handler(req, res, next);
         dReq->pathPos = oldPathPos;
         for (auto& p : params) dReq->param.erase(p);
-        return;
-    }
-    if (it->method == req->method() && it->tokenizedPath.size() == distance(dReq->pathPos, dReq->preparedPath.cend())) {
+
+    } else if (it->method == req->method() && it->tokenizedPath.size() == distance(dReq->pathPos, dReq->preparedPath.cend())) {
+        // route matched, and has method, which is added by set, check complete match
         vector<string_view> params = dReq->addMatchedParams(it->tokenizedPath);
         it->handler(req, res, next);
         for (auto& p : params) dReq->param.erase(p);
-        return;
+
+    } else {
+        // not for set, move to next
+        next();
     }
-    next();
 }

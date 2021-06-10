@@ -43,7 +43,7 @@ void CwHttpSession::onRead(unique_ptr<CwRequest> request, beast::error_code ec, 
         CW_GET_DATAEX(dRes, CwResponse, response.get());
         handler(request.get(), response.get(), CwNextFunc());
         if (!dRes->sent) {
-            cout << "missing call CwResponse::send()?" << endl;
+            cout << "missing call CwResponse::send() or unhandled router? " << endl;
             response->setStatus((int)http::status::not_found)
                 ->setHeader("Content-Type", "text/html")
                 ->setBody(fromString("404"))

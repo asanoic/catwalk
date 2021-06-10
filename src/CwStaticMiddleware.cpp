@@ -66,8 +66,8 @@ CwStaticMiddleware* CwStaticMiddleware::instance(string_view path) {
 
 void CwStaticMiddlewareData::handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
     next();
-    CW_GET_DATAEX(resd, CwResponse, res);
-    if (resd->sent) return;
+    CW_GET_DATAEX(dRes, CwResponse, res);
+    if (dRes->sent) return;
 
     if (req->method() != CwHttpVerb::get && req->method() != CwHttpVerb::head) return;
 

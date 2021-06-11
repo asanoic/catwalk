@@ -62,8 +62,6 @@ void CwRouterData::handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
 
 void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res) {
     if (it == list.cend()) return;
-    CW_GET_DATAEX(dRes, CwResponse, res);
-    if (dRes->sent) return;
     CwNextFunc next = [it, req, res, this]() {
         this->action(std::next(it), req, res);
     };

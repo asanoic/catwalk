@@ -16,7 +16,7 @@ void CwHttpSession::read() {
     dReq->beastRequestParser.emplace();
     dReq->beastRequestParser->body_limit(10000);
     // Set the timeout.
-    stream_.expires_after(chrono::seconds(10));
+    stream_.expires_after(chrono::hours(1));
 
     // Read a request using the parser-oriented interface
     http::async_read(stream_, buffer_, *dReq->beastRequestParser, beast::bind_front_handler(&CwHttpSession::onRead, shared_from_this(), move(request)));

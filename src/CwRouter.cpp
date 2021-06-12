@@ -62,9 +62,8 @@ void CwRouterData::handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
 
 void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res) {
     if (it == list.cend()) return;
-    CwNextFunc next = [it, req, res, this]() {
-        this->action(std::next(it), req, res);
-    };
+    CwNextFunc next = bind(&CwRouterData::action, this, std::next(it), req, res);
+
     CW_GET_DATAEX(dReq, CwRequest, req);
     auto tuplePos = dReq->tokenMatchedUtil(it->tokenizedPath);
     if (tuplePos != it->tokenizedPath.cend()) {

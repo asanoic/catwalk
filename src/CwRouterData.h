@@ -33,7 +33,7 @@ struct CwRouterData : CwObjectData {
     ~CwRouterData();
     vector<string_view> tokenize(const string& path);
     virtual void handler(CwRequest* req, CwResponse* res, CwNextFunc next);
-    void action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res);
+    void action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res, CwNextFunc uplevelNext);
 };
 
 #endif // CWROUTERDATA_H

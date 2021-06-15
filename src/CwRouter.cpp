@@ -28,8 +28,7 @@ CwRouter* CwRouter::use(CwFullHandler handler) noexcept {
 }
 
 CwRouter* CwRouter::use(CwRouter* router) noexcept {
-    CW_GET_DATAEX(dRouter, CwRouter, router);
-    return use("", bind(&CwRouterData::handler, dRouter, placeholders::_1, placeholders::_2, placeholders::_3));
+    return use("", router);
 }
 
 CwRouter* CwRouter::set(CwHttpVerb method, const string& path, CwHandler handler) noexcept {
@@ -50,13 +49,19 @@ vector<string_view> CwRouterData::tokenize(const string& path) {
 }
 
 void CwRouterData::handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
-    action(list.cbegin(), req, res);
-    if (next) next();
+    action(list.cbegin(), req, res, next);
 }
 
-void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res) {
-    if (it == list.cend()) return;
-    CwNextFunc next = bind(&CwRouterData::action, this, std::next(it), req, res);
+void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res, CwNextFunc uplevelNext) {
+    if (it == list.cend()) {
+        if (uplevelNext) uplevelNext();
+        return;
+    }
+    CwNextFunc next = [this, &it, req, res, &uplevelNext, firstTime = true]() mutable {
+        if (!firstTime) return;
+        firstTime = false;
+        this->action(std::next(it), req, res, uplevelNext);
+    };
 
     CW_GET_DATAEX(dReq, CwRequest, req);
     auto tuplePos = dReq->tokenMatchedUtil(it->tokenizedPath);

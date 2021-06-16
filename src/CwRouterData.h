@@ -28,6 +28,8 @@ struct CwRouteTuple {
 };
 
 struct CwRouterData : CwObjectData {
+    static void kEmptyCall() {};
+
     vector<CwRouteTuple> list;
 
     ~CwRouterData();

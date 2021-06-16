@@ -9,6 +9,10 @@ using namespace std;
 #include "CwResponseData.h"
 #include "utils.h"
 
+void EMPTY_NEXT_CALL() {
+    cout << " blah" << endl;
+}
+
 CW_OBJECT_CONSTRUCTOR(CwRouter, CwObject) {
 }
 
@@ -52,15 +56,13 @@ void CwRouterData::handler(CwRequest* req, CwResponse* res, CwNextFunc next) {
     action(list.cbegin(), req, res, next);
 }
 
-void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res, CwNextFunc uplevelNext) {
-    if (it == list.cend()) {
-        if (uplevelNext) uplevelNext();
-        return;
-    }
-    CwNextFunc next = [this, &it, req, res, &uplevelNext, firstTime = true]() mutable {
+void CwRouterData::action(vector<CwRouteTuple>::const_iterator it, CwRequest* req, CwResponse* res, CwNextFunc uplevel) {
+    if (it == list.cend()) return uplevel();
+
+    CwNextFunc next = [this, &it, req, res, &uplevel, firstTime = true]() mutable {
         if (!firstTime) return;
         firstTime = false;
-        this->action(std::next(it), req, res, uplevelNext);
+        this->action(std::next(it), req, res, uplevel);
     };
 
     CW_GET_DATAEX(dReq, CwRequest, req);

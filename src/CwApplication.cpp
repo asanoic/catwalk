@@ -28,7 +28,7 @@ int CwApplication::start(uint16_t port) noexcept {
     auto listener = make_unique<CwListener>(
         ioc,
         ip::tcp::endpoint(ip::address(), port),
-        bind(&CwApplicationData::handler, d, placeholders::_1, placeholders::_2, CwNextFunc()));
+        bind(&CwApplicationData::handler, d, placeholders::_1, placeholders::_2, CwRouterData::kEmptyCall));
 
     listener->run();
 
